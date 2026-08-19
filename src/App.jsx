@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { NavLink, Route, Routes } from "react-router-dom";
+import { Link, NavLink, Route, Routes } from "react-router-dom";
 import { CartProvider, useCart } from "./lib/cart";
 import { fetchPhysical } from "./lib/products";
 import CartDrawer from "./components/CartDrawer";
@@ -15,10 +15,10 @@ function Header() {
   return (
     <header className="site-head">
       <div className="wrap head-in">
-        <div className="brandbox">
+        <Link to="/" className="brandbox" style={{ textDecoration: "none", color: "inherit" }}>
           <div className="brand">AURA<b>PLAYGROUND</b></div>
           <div className="tagline">{TAGLINE}</div>
-        </div>
+        </Link>
         <nav>
           <NavLink to="/" end className={({ isActive }) => (isActive ? "on" : "")}>首頁</NavLink>
           <NavLink to="/shop" className={({ isActive }) => (isActive ? "on" : "")}>手作小物</NavLink>
