@@ -31,6 +31,21 @@ const FORMS = {
       { k: "graceYears", l: "寬限期（年，沒有填 0）", ph: "0", num: true },
       { k: "monthlyIncome", l: "家庭月收入", ph: "90000", num: true },
     ], run: "算給我看", loading: "正在算⋯⋯" },
+  "gift-etiquette": { fields: [
+      { k: "occasion", l: "什麼場合", ph: "喬遷、彌月、婚禮、長輩過年紅包⋯⋯" },
+      { k: "relation", l: "跟對方的關係", ph: "主管、遠房親戚、好朋友、鄰居⋯⋯" },
+      { k: "context", l: "還有什麼該知道的", ph: "地區習俗、對方的喜好、你們平常的交情", multi: true },
+    ], run: "幫我抓金額", loading: "正在抓行情⋯⋯" },
+  "style-planning": { fields: [
+      { k: "wardrobe", l: "你現在有的衣服（想到什麼寫什麼）", ph: "白襯衫、牛仔褲、黑色小外套⋯⋯", multi: true },
+      { k: "occasion", l: "要搭給什麼場合", ph: "上班、約會、朋友聚餐⋯⋯" },
+      { k: "style", l: "喜歡的風格關鍵字（選填）", ph: "簡約、日系、通勤⋯⋯" },
+    ], run: "幫我排搭配", loading: "正在排搭配⋯⋯" },
+  "startup-basics": { fields: [
+      { k: "offer", l: "你想賣什麼", ph: "產品、服務、課程⋯⋯，越具體越好", multi: true },
+      { k: "customer", l: "想賣給誰", ph: "他們是誰、通常在哪裡出沒" },
+      { k: "stage", l: "現在到哪一步了", ph: "只有想法／做出雛型／已經賣出過幾筆" },
+    ], run: "幫我拆步驟", loading: "正在拆解⋯⋯" },
 };
 
 export default function ToolRunner({ skill, onBack, onCredits }) {
@@ -57,7 +72,9 @@ export default function ToolRunner({ skill, onBack, onCredits }) {
   async function onFile(e) {
     const file = e.target.files?.[0];
     if (!file) return;
-    setPhoto({ type: file.type || "image/jpeg", data: await imageToBase64(file) });
+    // imageToBase64 內部用 canvas 重新編碼，不管原始檔案是什麼格式，輸出的一律是 JPEG，
+    // 這裡的 type 要跟著寫死，不能用原始檔案的 file.type（會跟實際位元組對不上）
+    setPhoto({ type: "image/jpeg", data: await imageToBase64(file) });
   }
 
   async function go(extraFields) {

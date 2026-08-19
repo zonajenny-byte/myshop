@@ -95,7 +95,7 @@ export default function Tools() {
     <section>
       <div className="hero">
         <div className="tag">{mine.length} / {SKILLS.length} 顆可用</div>
-        <h1>今天要用哪一個？<em>七顆共用同一個判讀次數池</em></h1>
+        <h1>今天要用哪一個？<em>買到的工具共用同一個判讀次數池</em></h1>
         <div style={{ display: "flex", gap: 10, marginTop: 18, flexWrap: "wrap" }}>
           {credits !== null && (
             <span className={"credit" + (credits < 20 ? " low" : "")}>剩 {credits} 次</span>

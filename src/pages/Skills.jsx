@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { SKILLS, SKILL_BUNDLE, COMING_SOON } from "../data/catalog";
+import { SKILLS, SKILL_BUNDLE, WAVE_1_IDS, COMING_SOON } from "../data/catalog";
 import ProductCard from "../components/ProductCard";
 import { useCart, money } from "../lib/cart";
 import { notifyMe } from "../lib/api";
@@ -20,7 +20,9 @@ export default function Skills() {
     }
   }
 
-  const single = SKILLS.length * 850;
+  const wave1 = SKILLS.filter((s) => WAVE_1_IDS.includes(s.id));
+  const wave2 = SKILLS.filter((s) => !WAVE_1_IDS.includes(s.id));
+  const single = wave1.length * 850;
 
   return (
     <>
@@ -32,7 +34,7 @@ export default function Skills() {
           網頁版手機電腦都支援，不需要下載或安裝任何東西。
         </p>
         <div className="grid">
-          {SKILLS.map((p) => <ProductCard key={p.id} p={p} />)}
+          {wave1.map((p) => <ProductCard key={p.id} p={p} />)}
         </div>
 
         <div className="kit">
@@ -40,7 +42,7 @@ export default function Skills() {
           <h3>七顆全帶</h3>
           <p>附一份 30 天使用節奏表。不用七顆同時開始，一週開一顆，讓它們自己長進生活裡。</p>
           <ul className="kitlist">
-            {SKILLS.map((s) => (
+            {wave1.map((s) => (
               <li key={s.id}><span>{s.emoji}</span><span>{s.name}</span></li>
             ))}
           </ul>
@@ -59,10 +61,21 @@ export default function Skills() {
         </div>
       </section>
 
+      {wave2.length > 0 && (
+        <section>
+          <span className="pill mint">Wave 2 · Available Now</span>
+          <h2>新上的幾顆</h2>
+          <p className="sub">單顆買，還沒有套裝價。跟七顆共用同一個判讀次數池。</p>
+          <div className="grid">
+            {wave2.map((p) => <ProductCard key={p.id} p={p} />)}
+          </div>
+        </section>
+      )}
+
       <section>
-        <span className="pill mint">Wave 2 · In Progress</span>
+        <span className="pill mint">In Progress</span>
         <h2>還在做</h2>
-        <p className="sub">寧可七顆做好，也不要二十顆做一半。做好會通知你，上線當天有早鳥價。</p>
+        <p className="sub">寧可做好再上，也不要一次推一堆做一半的。做好會通知你，上線當天有早鳥價。</p>
         <div className="soon-grid">
           {COMING_SOON.map(([name, desc, icon]) => (
             <div className="soon" key={name}>
@@ -108,16 +121,20 @@ export default function Skills() {
             <h4><span className="num">N05</span>買房這顆做得到什麼</h4>
             <p>只做負擔能力試算與資訊整理。<b>不預測房價、不評估增值、不出具法律意見。</b>稅費為粗估，簽約前請地政士試算。</p>
           </div>
+          <div className="note warn">
+            <h4><span className="num">N06</span>新上三顆的界線</h4>
+            <p>送禮與人情只給一般行情參考，不是特定習俗的正式規範。個人風格規劃不做身形或外貌評論。人生商學院不是財務顧問、律師或會計師，公司登記、稅務、合約請找專業。</p>
+          </div>
           <div className="note">
-            <h4><span className="num">N06</span>資料放在哪</h4>
+            <h4><span className="num">N07</span>資料放在哪</h4>
             <p>忌口清單、等待清單、對話紀錄都留在你自己的裝置上。上傳的照片只用於當次判讀，不會存下來訓練任何東西。</p>
           </div>
           <div className="note">
-            <h4><span className="num">N07</span>使用次數</h4>
-            <p>買任一顆附 300 次判讀，七顆共用同一個池，不會過期。用完可以加購，不強制訂閱。</p>
+            <h4><span className="num">N08</span>使用次數</h4>
+            <p>買任一顆附 300 次判讀，所有已買的工具共用同一個池，不會過期。用完可以加購，不強制訂閱。</p>
           </div>
           <div className="note">
-            <h4><span className="num">N08</span>更新與退款</h4>
+            <h4><span className="num">N09</span>更新與退款</h4>
             <p>工具持續更新，用到的永遠是新版。數位商品開通後不接受退款，下單前請確認符合 N02。</p>
           </div>
         </div>

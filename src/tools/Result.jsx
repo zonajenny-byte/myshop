@@ -10,6 +10,9 @@ export default function Result({ skill, data }) {
     "big-decision": DecideResult,
     "purchase-pause": BuyResult,
     "home-buying": HomeResult,
+    "gift-etiquette": GiftResult,
+    "style-planning": StyleResult,
+    "startup-basics": StartupResult,
   };
   const C = map[skill.toolKey];
   return C ? <C r={data} /> : null;
@@ -439,6 +442,109 @@ function HomeResult({ r }) {
       {r.notes?.map((n, i) => (
         <p key={i} style={{ fontSize: 12, color: "var(--ink2)" }}>· {n}</p>
       ))}
+    </>
+  );
+}
+
+/* ---------- 送禮與人情 ---------- */
+
+function GiftResult({ r }) {
+  return (
+    <>
+      <div className="rhead"><h2>{r.occasion}</h2><p>{r.relation_note}</p></div>
+      <div className="numgrid">
+        <div className="numcard"><div className="n">{money(r.suggested_range.low)}–{money(r.suggested_range.high)}</div><div className="u">合理區間</div></div>
+        <div className="numcard"><div className="n">{money(r.suggested_range.typical)}</div><div className="u">建議金額</div></div>
+      </div>
+      <div className="oneline">{r.reasoning}</div>
+      {r.gift_options?.length > 0 && (
+        <div className="card"><div className="eyebrow">禮物選項</div>
+          {r.gift_options.map((g) => (
+            <div className="item" key={g.item}><div className="n">{g.item}</div><div className="y">{g.why}</div></div>
+          ))}</div>
+      )}
+      {r.etiquette_notes?.length > 0 && (
+        <div className="fbox yel"><div className="fhead">📋 值得知道</div>
+          {r.etiquette_notes.map((n, i) => (
+            <div className="flag" key={i}><p>{n}</p></div>
+          ))}</div>
+      )}
+      {r.wording && (
+        <div className="fbox lil"><div className="fhead">可以直接用的句子</div>
+          <div className="script">「{r.wording}」</div></div>
+      )}
+    </>
+  );
+}
+
+/* ---------- 個人風格規劃 ---------- */
+
+function StyleResult({ r }) {
+  return (
+    <>
+      <div className="rhead"><h2>你的風格主軸</h2><p>{r.style_summary}</p></div>
+      {r.outfits?.map((o, i) => (
+        <div className="card" key={i}>
+          <div className="eyebrow" style={{ marginBottom: 8 }}>{o.occasion}</div>
+          <h3 style={{ fontSize: 17, marginBottom: 8 }}>{o.name}</h3>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
+            {o.items.map((it) => (
+              <span key={it} style={{ fontSize: 12.5, background: "var(--blush)", color: "var(--rose-d)",
+                padding: "5px 12px", borderRadius: 14 }}>{it}</span>
+            ))}
+          </div>
+          <p style={{ fontSize: 13, color: "var(--ink2)" }}>{o.why}</p>
+        </div>
+      ))}
+      {r.wardrobe_gaps?.length > 0 && (
+        <div className="fbox yel"><div className="fhead">💡 如果想投資一件</div>
+          {r.wardrobe_gaps.map((g, i) => <div className="flag" key={i}><p>{g}</p></div>)}</div>
+      )}
+      {r.styling_tips?.length > 0 && (
+        <div className="fbox grn"><div className="fhead">✓ 小技巧</div>
+          {r.styling_tips.map((t, i) => <div className="flag" key={i}><p>{t}</p></div>)}</div>
+      )}
+    </>
+  );
+}
+
+/* ---------- 人生商學院 ---------- */
+
+function StartupResult({ r }) {
+  return (
+    <>
+      <div className="card">
+        <div className="eyebrow" style={{ marginBottom: 8 }}>商業模式一頁</div>
+        <div className="item"><div className="n">賣什麼</div><div className="y">{r.business_model.what}</div></div>
+        <div className="item"><div className="n">賣給誰</div><div className="y">{r.business_model.who}</div></div>
+        <div className="item"><div className="n">怎麼賺</div><div className="y">{r.business_model.how_money}</div></div>
+      </div>
+
+      <div className="fbox lil">
+        <div className="fhead">💰 定價</div>
+        <p style={{ fontSize: 15, fontWeight: 500, marginBottom: 8 }}>{r.pricing.range}</p>
+        <p style={{ fontSize: 13, color: "var(--ink2)", marginBottom: 6 }}>{r.pricing.approach}</p>
+        <p style={{ fontSize: 12.5, color: "var(--ink2)" }}>{r.pricing.reasoning}</p>
+      </div>
+
+      <div className="card">
+        <div className="eyebrow" style={{ marginBottom: 6 }}>找到第一個客戶</div>
+        {r.first_customer_steps?.map((s, i) => (
+          <div className="qitem" key={i}><span className="qnum">{i + 1}</span>
+            <span><b style={{ fontWeight: 500 }}>{s.step}</b><br />
+              <span style={{ fontSize: 13, color: "var(--ink2)" }}>{s.detail}</span></span></div>
+        ))}
+      </div>
+
+      {r.risks?.length > 0 && (
+        <div className="fbox red"><div className="fhead">⚠️ 常見的坑</div>
+          {r.risks.map((risk, i) => <div className="flag" key={i}><p>{risk}</p></div>)}</div>
+      )}
+
+      {r.next_checkpoint && (
+        <div className="fbox grn"><div className="fhead">下一個檢查點</div>
+          <p style={{ fontSize: 13.5 }}>{r.next_checkpoint}</p></div>
+      )}
     </>
   );
 }

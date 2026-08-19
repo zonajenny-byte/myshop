@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { adminLogin, adminSignOut, isAdminSignedIn } from "../lib/adminApi";
-import { usePhysicalProducts, adminCreate, adminUpdate, adminRemove, resetDemoData } from "../lib/products";
-import { DEMO } from "../lib/api";
+import { usePhysicalProducts, adminCreate, adminUpdate, adminRemove, resetDemoData, resolveImageUrl } from "../lib/products";
+import { DEMO, imageToBase64 } from "../lib/api";
 import { money } from "../lib/cart";
 
 const EMPTY = { id: "", name: "", en: "", price: "", stock: "", blurb: "", emoji: "✦", tint: "#F3EDF9",
-  spec: [["", ""], ["", ""], ["", ""]] };
+  image: null, spec: [["", ""], ["", ""], ["", ""]] };
 
 export default function Admin() {
   const [signedIn, setSignedIn] = useState(isAdminSignedIn());
@@ -38,6 +38,7 @@ export default function Admin() {
     setForm({
       id: p.id, name: p.name, en: p.en || "", price: p.price, stock: p.stock ?? "",
       blurb: p.blurb || "", emoji: p.emoji || "✦", tint: p.tint || "#F3EDF9",
+      image: p.image || null,
       spec: [...(p.spec || []), ["", ""], ["", ""], ["", ""]].slice(0, 3),
     });
     setEditing(p.id);
@@ -46,6 +47,26 @@ export default function Admin() {
   function setSpec(i, col, val) {
     const spec = form.spec.map((row, ri) => (ri === i ? [col === 0 ? val : row[0], col === 1 ? val : row[1]] : row));
     setForm({ ...form, spec });
+  }
+
+  const [photoBusy, setPhotoBusy] = useState(false);
+
+  async function onPhotoSelect(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPhotoBusy(true);
+    try {
+      // imageToBase64 固定輸出 JPEG，並已經做過壓縮，適合直接當商品照存
+      const b64 = await imageToBase64(file, 1200);
+      setForm((f) => ({ ...f, image: "data:image/jpeg;base64," + b64 }));
+    } catch {
+      setErr("這張圖片讀不了，換一張試試。");
+    }
+    setPhotoBusy(false);
+  }
+
+  function removePhoto() {
+    setForm((f) => ({ ...f, image: null }));
   }
 
   async function save() {
@@ -122,6 +143,26 @@ export default function Admin() {
             {editing === "new" ? "新增商品" : "編輯商品"}
           </h2>
 
+          <div className="flabel">展示圖（選填，沒有的話會用 emoji 圓標代替）</div>
+          {form.image ? (
+            <div style={{ position: "relative", marginBottom: 12 }}>
+              <img src={resolveImageUrl(form.image)} alt="商品預覽"
+                style={{ width: "100%", aspectRatio: "4/3", objectFit: "cover", borderRadius: 16 }} />
+              <button className="add danger" onClick={removePhoto}
+                style={{ position: "absolute", top: 10, right: 10, padding: "8px 16px", fontSize: 13 }}>
+                移除
+              </button>
+            </div>
+          ) : (
+            <label className="drop" style={{ marginBottom: 12, padding: "24px 20px" }}>
+              <div className="ic">📷</div>
+              <div className="t">{photoBusy ? "處理中⋯⋯" : "點這裡選一張照片"}</div>
+              <div className="s">會自動壓縮，手機拍的照片也能直接用</div>
+              <input type="file" accept="image/*" onChange={onPhotoSelect}
+                style={{ display: "none" }} disabled={photoBusy} />
+            </label>
+          )}
+
           <div className="flabel">名稱</div>
           <input className="field" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
             placeholder="月相手鍊" />
@@ -181,8 +222,11 @@ export default function Admin() {
         <div className="grid">
           {products.map((p) => (
             <div className="card" key={p.id}>
+              {p.image ? (
+                <img className="card-photo" src={resolveImageUrl(p.image)} alt={p.name} />
+              ) : null}
               <div className="card-top">
-                <div className="orb" style={{ background: p.tint }}>{p.emoji}</div>
+                {!p.image && <div className="orb" style={{ background: p.tint }}>{p.emoji}</div>}
                 <div style={{ flex: 1 }}>
                   <div className="id">{p.id}</div>
                   <h3>{p.name}</h3>

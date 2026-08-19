@@ -5,6 +5,10 @@
  * 如果部署在 Vercel/Railway 這類無狀態或會重建檔案系統的平台，
  * 檔案可能在重新部署時被清空——正式上線建議換成 SQLite 或 Postgres，
  * 邏輯（get/create/update/remove）介面保持一樣，換掉這支檔案就好。
+ *
+ * 商品照片存法：前端把照片轉成 base64 送過來，這裡解碼寫成真正的檔案
+ * 放在 uploads/ 資料夾，商品資料裡只存檔名路徑（例如 /uploads/PH-01-xxx.jpg），
+ * 不會把整包 base64 塞進 products.json——那樣檔案會越養越大、每次讀商品清單也變慢。
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -12,6 +16,10 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const FILE = path.join(__dirname, "products.json");
+const UPLOADS_DIR = path.join(__dirname, "uploads");
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5MB，前端已經有壓縮，正常不會逼近這個上限
+
+fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 
 const SEED = [
   {
@@ -69,6 +77,35 @@ function save(list) {
 
 let products = load();
 
+/**
+ * 把 base64 圖片存成真正的檔案，回傳可以直接放進商品資料的路徑。
+ * 如果傳進來的已經是路徑（沒改圖片、編輯時原樣傳回）就直接沿用，不重存。
+ * 丟 Error 的話上層要接住，轉成一般的驗證錯誤訊息回給前端。
+ */
+function saveImageIfNeeded(image, productId) {
+  if (!image) return null;
+  if (!image.startsWith("data:image/")) return image; // 已經是路徑，沒有換圖
+
+  const match = image.match(/^data:image\/(\w+);base64,(.+)$/);
+  if (!match) throw new Error("圖片格式看不懂，請重新選一張");
+
+  const [, ext, b64] = match;
+  const buffer = Buffer.from(b64, "base64");
+  if (buffer.length > MAX_IMAGE_BYTES) {
+    throw new Error("圖片太大了，請壓縮到 5MB 以內");
+  }
+
+  const filename = `${productId}-${Date.now()}.${ext === "jpeg" ? "jpg" : ext}`;
+  fs.writeFileSync(path.join(UPLOADS_DIR, filename), buffer);
+  return `/uploads/${filename}`;
+}
+
+function deleteImageFile(imagePath) {
+  if (!imagePath || !imagePath.startsWith("/uploads/")) return;
+  const full = path.join(UPLOADS_DIR, path.basename(imagePath));
+  fs.unlink(full, () => {}); // 刪不掉也沒關係，不影響商品資料本身
+}
+
 export function list() {
   return products;
 }
@@ -86,8 +123,21 @@ export function create(input) {
   const errors = validate(input);
   if (errors.length) return { error: errors.join("；") };
 
+  const id = input.id?.trim() || slugId(input.name);
+
+  if (products.some((p) => p.id === id)) {
+    return { error: "這個商品編號已經用過了。" };
+  }
+
+  let image;
+  try {
+    image = saveImageIfNeeded(input.image, id);
+  } catch (e) {
+    return { error: e.message };
+  }
+
   const item = {
-    id: input.id?.trim() || slugId(input.name),
+    id,
     name: input.name.trim(),
     en: (input.en || "").trim(),
     price: Number(input.price),
@@ -96,11 +146,8 @@ export function create(input) {
     spec: Array.isArray(input.spec) ? input.spec.filter((r) => r[0] && r[1]) : [],
     emoji: input.emoji?.trim() || "✦",
     tint: input.tint?.trim() || "#F3EDF9",
+    image,
   };
-
-  if (products.some((p) => p.id === item.id)) {
-    return { error: "這個商品編號已經用過了。" };
-  }
 
   products = [...products, item];
   save(products);
@@ -114,11 +161,26 @@ export function update(id, input) {
   const errors = validate({ ...products[idx], ...input });
   if (errors.length) return { error: errors.join("；") };
 
+  let image = products[idx].image;
+  if (input.image !== undefined) {
+    try {
+      const saved = saveImageIfNeeded(input.image, id);
+      // 換了新圖才刪舊檔，舊圖路徑沒變（等於沒換圖）就不動它
+      if (saved && saved !== products[idx].image && products[idx].image) {
+        deleteImageFile(products[idx].image);
+      }
+      image = saved;
+    } catch (e) {
+      return { error: e.message };
+    }
+  }
+
   const item = {
     ...products[idx],
     ...input,
     price: Number(input.price ?? products[idx].price),
     stock: Number(input.stock ?? products[idx].stock),
+    image,
   };
   products = products.map((p) => (p.id === id ? item : p));
   save(products);
@@ -126,9 +188,11 @@ export function update(id, input) {
 }
 
 export function remove(id) {
+  const target = products.find((p) => p.id === id);
   const before = products.length;
   products = products.filter((p) => p.id !== id);
   if (products.length === before) return { error: "找不到這個商品。" };
+  if (target?.image) deleteImageFile(target.image);
   save(products);
   return { ok: true };
 }

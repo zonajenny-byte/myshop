@@ -60,7 +60,7 @@ export default function CartDrawer() {
       } else if (res.formHtml) {
         // 後端回傳藍新的自動送出表單
         document.body.insertAdjacentHTML("beforeend", res.formHtml);
-        document.getElementById("newebpay-form")?.submit();
+        document.getElementById("checkout-form")?.submit();
       }
     } catch (e) {
       setMsg({ t: "err", m: e.message });

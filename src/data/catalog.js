@@ -172,7 +172,61 @@ export const SKILLS = [
     emoji: "🏠",
     tint: "#F6EFE6",
   },
+  {
+    id: "AP-SL-19",
+    kind: "digital",
+    toolKey: "gift-etiquette",
+    name: "送禮與人情",
+    en: "Gift & Etiquette",
+    price: 850,
+    blurb: "紅包包多少、伴手禮送什麼，不用每次都問人。",
+    feat: [
+      "依場合、關係、地區抓一個合理金額區間，不是瞎猜",
+      "伴手禮或禮物選項，附上為什麼適合這個場合",
+      "禮金封面、卡片怎麼寫，附上可以直接用的句子",
+    ],
+    limit: "只給一般行情參考，不是特定家庭或地方習俗的正式規範。喪事、大型婚宴這類重要場合，建議還是跟長輩或當地習俗再確認一次。",
+    emoji: "🎁",
+    tint: "#FBEAF0",
+  },
+  {
+    id: "AP-SL-20",
+    kind: "digital",
+    toolKey: "style-planning",
+    name: "個人風格規劃",
+    en: "Personal Style Planning",
+    price: 850,
+    blurb: "從你已經有的衣服開始排穿搭，不是叫你買更多。",
+    feat: [
+      "從你現有的單品排出新搭法，不主打購物清單",
+      "抓出你衣櫃裡真正的風格主軸，不是套用網路流行公式",
+      "不同場合的穿搭建議，附上為什麼這樣搭",
+    ],
+    limit: "只根據你描述的衣物給搭配建議，不做身形或外貌評論，也不是專業造型師的到府服務。",
+    emoji: "🎀",
+    tint: "#FFEDE6",
+  },
+  {
+    id: "AP-SL-21",
+    kind: "digital",
+    toolKey: "startup-basics",
+    name: "人生商學院",
+    en: "Startup Basics",
+    price: 850,
+    blurb: "從零到第一個客戶，創業最初的路怎麼走。",
+    feat: [
+      "商業模式一頁講清楚：你賣什麼、賣給誰、怎麼賺",
+      "定價邏輯拆解，不是憑感覺喊價",
+      "找到並談成第一個客戶的具體步驟",
+    ],
+    limit: "只做創業初期的思路整理，不是財務顧問、律師或會計師。公司登記、稅務、合約審閱請找專業處理。",
+    emoji: "💼",
+    tint: "#E6F1FB",
+  },
 ];
+
+/** Wave 1 的七顆，套裝價鎖定這七顆——之後上新商品不會連帶把套裝條件跟著改掉 */
+export const WAVE_1_IDS = ["AP-SL-01", "AP-SL-09", "AP-SL-06", "AP-SL-07", "AP-SL-08", "AP-SL-13", "AP-SL-16"];
 
 /** 七顆全帶的套裝價 */
 export const SKILL_BUNDLE = {
@@ -180,15 +234,13 @@ export const SKILL_BUNDLE = {
   kind: "digital",
   name: "七顆全帶",
   price: 4900,
-  skillIds: SKILLS.map((s) => s.id),
+  skillIds: WAVE_1_IDS,
 };
 
 /** 還在做的，只收通知名單 */
 export const COMING_SOON = [
-  ["送禮與人情", "紅包包多少、伴手禮送什麼", "🎁"],
   ["看醫生前的準備", "門診三分鐘，先整理好要講的話", "🩺"],
   ["療癒陪伴", "情緒上來的時候，有個地方把話講完", "🌙"],
-  ["個人風格規劃", "從你已經有的衣服開始排穿搭", "🎀"],
   ["家的空間重置", "小坪數、租來的房子也能住得像自己的", "🪴"],
   ["租屋與搬家", "押金怎麼拿得回來", "🔑"],
 ];

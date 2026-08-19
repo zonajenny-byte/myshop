@@ -1,5 +1,5 @@
 import { createContext, useContext, useMemo, useState, useCallback } from "react";
-import { SKILLS, SKILL_BUNDLE, SHIPPING_FEE, FREE_SHIPPING_OVER } from "../data/catalog";
+import { SKILL_BUNDLE, WAVE_1_IDS, SHIPPING_FEE, FREE_SHIPPING_OVER } from "../data/catalog";
 import { byId } from "./products";
 
 const CartCtx = createContext(null);
@@ -21,7 +21,7 @@ export function CartProvider({ children }) {
   }, []);
 
   const addAllSkills = useCallback(() => {
-    setIds((prev) => new Set([...prev, ...SKILLS.map((s) => s.id)]));
+    setIds((prev) => new Set([...prev, ...WAVE_1_IDS]));
   }, []);
 
   const clear = useCallback(() => setIds(new Set()), []);
@@ -31,10 +31,10 @@ export function CartProvider({ children }) {
     const physical = items.filter((i) => i.kind === "physical");
     const digital = items.filter((i) => i.kind === "digital");
 
-    // 七顆到齊就自動套用套裝價，不用另外加購物車
-    const skillsFull = SKILLS.every((s) => ids.has(s.id));
+    // Wave 1 的七顆到齊就自動套用套裝價，其他數位商品（含新上的 Wave 2）另外算原價
+    const skillsFull = WAVE_1_IDS.every((id) => ids.has(id));
     const digitalTotal = skillsFull
-      ? SKILL_BUNDLE.price + digital.filter((d) => !SKILLS.some((s) => s.id === d.id))
+      ? SKILL_BUNDLE.price + digital.filter((d) => !WAVE_1_IDS.includes(d.id))
           .reduce((a, b) => a + b.price, 0)
       : digital.reduce((a, b) => a + b.price, 0);
 

@@ -76,6 +76,17 @@ export function byId(id) {
   return [...physical, ...SKILLS].find((p) => p.id === id);
 }
 
+/**
+ * 商品照片可能是三種形式：DEMO 模式的 base64 data URL（直接能用）、
+ * 後端回傳的相對路徑 /uploads/xxx.jpg（要接上 API_BASE 才能讀）、
+ * 或完全沒有照片（回傳 null，畫面會退回 emoji 圓標）。
+ */
+export function resolveImageUrl(image) {
+  if (!image) return null;
+  if (image.startsWith("data:") || image.startsWith("http")) return image;
+  return API_BASE + image;
+}
+
 /* ---------- 後台 CRUD ---------- */
 
 export async function adminCreate(input) {
