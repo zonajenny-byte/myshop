@@ -6,7 +6,7 @@ export default function Shop() {
   return (
     <section>
       <span className="pill mint">Handmade</span>
-      <h2>手作小物</h2>
+      <h2>能量小物</h2>
       <p className="sub">
         一件一件做的，數量不多。下單後 3–5 個工作天出貨，
         單筆實體商品滿 NT$2,000 免運。

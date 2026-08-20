@@ -2,7 +2,7 @@
 
 > 每天進步一點，成為更好的自己
 
-一個站賣兩種東西：手作小物（實體）與生活 AI 工具（數位）。工具分兩波：Wave 1 七顆有套裝價，Wave 2 陸續上新的單顆賣。共用同一個購物袋、一次結帳。手作小物有後台可以隨時上新品，不用改程式碼。
+一個站賣兩種東西：能量小物（實體）與生活 AI 工具（數位）。工具分兩波：Wave 1 七顆有套裝價，Wave 2 陸續上新的單顆賣。共用同一個購物袋、一次結帳。能量小物有後台可以隨時上新品，不用改程式碼。
 
 React + Vite 前端，`server/` 是配套的 Node 後端。**前端沒有後端也能跑**——沒設定 `VITE_API_BASE` 時進預覽模式，用假資料把所有工具與後台的完整流程跑一遍。
 
@@ -44,11 +44,11 @@ npm run dev
 ```
 src/
   main.jsx  App.jsx  styles.css
-  data/catalog.js       所有工具 + WAVE_1_IDS（套裝鎖定的七顆）+ 即將推出。手作小物種子資料也在這，但不是真正來源
+  data/catalog.js       所有工具 + WAVE_1_IDS（套裝鎖定的七顆）+ 即將推出。能量小物種子資料也在這，但不是真正來源
   lib/
     cart.jsx             購物袋（實體與數位混合）
     api.js               工具執行 / 結帳 API
-    products.js           ← 手作小物的真正資料來源，DEMO 用 localStorage，接後端後打 API
+    products.js           ← 能量小物的真正資料來源，DEMO 用 localStorage，接後端後打 API
     adminApi.js           後台登入 / token
   components/
     ProductCard.jsx  CartDrawer.jsx
@@ -219,7 +219,7 @@ CUSTOMER_TOKEN_SECRET=      # 客戶登入用的簽章密鑰，要跟 TOKEN_SECR
 
 ```bash
 git add -A
-git commit -m "feat: 後台上架 + 手作小物與 AI 工具的合併商店"
+git commit -m "feat: 後台上架 + 能量小物與 AI 工具的合併商店"
 git push
 ```
 

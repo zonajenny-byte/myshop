@@ -4,7 +4,7 @@ import { API_BASE, DEMO } from "./api";
 import { adminToken } from "./adminApi";
 
 /**
- * 手作小物的動態商品源。
+ * 能量小物的動態商品源。
  *
  * DEMO 模式（沒設定 VITE_API_BASE）：存在瀏覽器的 localStorage，
  * 只有你自己這台裝置看得到，適合先摸一輪介面，**不是真的上架**。
@@ -59,7 +59,7 @@ export function refresh() {
   return fetchPhysical().then((list) => { notify(); return list; });
 }
 
-/** 頁面用這個 hook 拿手作小物清單，會在資料變動時自動重新渲染 */
+/** 頁面用這個 hook 拿能量小物清單，會在資料變動時自動重新渲染 */
 export function usePhysicalProducts() {
   const [list, setList] = useState(cache || SEED_PHYSICAL);
   useEffect(() => {
@@ -70,7 +70,7 @@ export function usePhysicalProducts() {
   return list;
 }
 
-/** 商品查找，涵蓋手作小物（動態）與七顆工具（靜態）。購物袋要用這個，不要用 catalog.js 的舊版。 */
+/** 商品查找，涵蓋能量小物（動態）與七顆工具（靜態）。購物袋要用這個，不要用 catalog.js 的舊版。 */
 export function byId(id) {
   const physical = cache || SEED_PHYSICAL;
   return [...physical, ...SKILLS].find((p) => p.id === id);

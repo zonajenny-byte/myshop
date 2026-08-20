@@ -95,7 +95,7 @@ export default function Admin() {
       <section>
         <div className="hero">
           <div className="tag">後台</div>
-          <h1>上架新商品<em>手作小物專用，AI 工具的商品清單不在這裡改</em></h1>
+          <h1>上架新商品<em>能量小物專用，AI 工具的商品清單不在這裡改</em></h1>
         </div>
         <div className="card" style={{ maxWidth: 420 }}>
           <div className="flabel">後台密碼</div>
@@ -119,7 +119,7 @@ export default function Admin() {
     <section>
       <div className="hero">
         <div className="tag">後台 · {products.length} 件上架中</div>
-        <h1>手作小物管理<em>加、改、下架，客人立刻看得到</em></h1>
+        <h1>能量小物管理<em>加、改、下架，客人立刻看得到</em></h1>
         <div style={{ display: "flex", gap: 10, marginTop: 18, flexWrap: "wrap" }}>
           <button className="credit" onClick={signOut}>登出</button>
           {DEMO && <button className="credit" onClick={resetDemoData}>還原範例資料</button>}

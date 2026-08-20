@@ -21,7 +21,7 @@ function Header() {
         </Link>
         <nav>
           <NavLink to="/" end className={({ isActive }) => (isActive ? "on" : "")}>首頁</NavLink>
-          <NavLink to="/shop" className={({ isActive }) => (isActive ? "on" : "")}>手作小物</NavLink>
+          <NavLink to="/shop" className={({ isActive }) => (isActive ? "on" : "")}>能量小物</NavLink>
           <NavLink to="/skills" className={({ isActive }) => (isActive ? "on" : "")}>AI 工具</NavLink>
           <NavLink to="/tools" className={({ isActive }) => (isActive ? "on" : "")}>工具台</NavLink>
         </nav>
@@ -55,7 +55,7 @@ function Footer() {
 }
 
 export default function App() {
-  // 一開始就把手作小物清單拉進來，購物袋才能正確解析商品 ID，
+  // 一開始就把能量小物清單拉進來，購物袋才能正確解析商品 ID，
   // 不用等到 Home 或 Shop 頁面先渲染過一次。
   useEffect(() => { fetchPhysical(); }, []);
 
