@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { useCart, money } from "../lib/cart";
 import { resolveImageUrl } from "../lib/products";
 
@@ -39,6 +40,13 @@ export default function ProductCard({ p }) {
         </div>
       )}
 
+      {/* 有 detail 內容的商品才有專屬頁面，目前只有自媒體爆款短片生成器 */}
+      {p.detail && (
+        <Link to={`/skill/${p.toolKey}`} style={{ fontSize: 13, marginTop: 12, display: "inline-block" }}>
+          看完整介紹與訂閱方案 →
+        </Link>
+      )}
+
       {p.limit && (
         <div className="limit">
           <b>使用限制</b>
@@ -47,7 +55,14 @@ export default function ProductCard({ p }) {
       )}
 
       <div className="card-foot">
-        <span className="price">{money(p.price)}</span>
+        <span className="price">
+          {money(p.price)}
+          {p.subscription && (
+            <span style={{ fontSize: 11, color: "var(--ink2)", fontWeight: 400, marginLeft: 6 }}>
+              或 {money(p.subscription.price)}/{p.subscription.periodLabel}
+            </span>
+          )}
+        </span>
         <button
           className={"add" + (inCart ? " on" : "")}
           onClick={() => toggle(p.id)}

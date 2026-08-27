@@ -28,11 +28,12 @@ function genOrderNo() {
   return `AP${ts}${rand}`;
 }
 
-export function create({ items, bundle, amount, shipping, buyer, shippingTo }) {
+export function create({ items, bundle, amount, shipping, buyer, shippingTo, discountCode }) {
   const order = {
     orderNo: genOrderNo(),
     items, bundle, amount, shipping,
     buyer, shippingTo,
+    discountCode: discountCode || null, // 有帶折扣碼的話存這裡，付款確認成功才會去標記用掉
     status: "pending", // pending → paid | failed
     createdAt: new Date().toISOString(),
     paidAt: null,
@@ -65,4 +66,15 @@ export function markFailed(orderNo, reason) {
 
 export function list() {
   return orders;
+}
+
+/**
+ * 過去 hours 小時內已付款訂單的彙總。給 LINE「匯總」回覆用。
+ * 只算 status==="paid" 的，pending/failed 不計入營收。
+ */
+export function summarize(hours) {
+  const since = Date.now() - hours * 60 * 60 * 1000;
+  const recent = orders.filter((o) => o.status === "paid" && o.paidAt && new Date(o.paidAt).getTime() >= since);
+  const total = recent.reduce((a, o) => a + (Number(o.amount) || 0), 0);
+  return { count: recent.length, total, orders: recent };
 }

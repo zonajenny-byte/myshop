@@ -46,6 +46,11 @@ const FORMS = {
       { k: "customer", l: "想賣給誰", ph: "他們是誰、通常在哪裡出沒" },
       { k: "stage", l: "現在到哪一步了", ph: "只有想法／做出雛型／已經賣出過幾筆" },
     ], run: "幫我拆步驟", loading: "正在拆解⋯⋯" },
+  "viral-video-script": { fields: [
+      { k: "topic", l: "這支想拍什麼內容", ph: "分享什麼、教什麼、記錄什麼⋯⋯", multi: true },
+      { k: "platform", l: "要發在哪個平台", ph: "Reels、Shorts、TikTok⋯⋯" },
+      { k: "length", l: "大概想拍多長", ph: "15 秒、30 秒、1 分鐘⋯⋯" },
+    ], run: "幫我寫腳本", loading: "正在寫腳本⋯⋯" },
 };
 
 export default function ToolRunner({ skill, onBack, onCredits }) {

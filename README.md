@@ -46,21 +46,34 @@ src/
   main.jsx  App.jsx  styles.css
   data/catalog.js       所有工具 + WAVE_1_IDS（套裝鎖定的七顆）+ 即將推出。能量小物種子資料也在這，但不是真正來源
   lib/
-    cart.jsx             購物袋（實體與數位混合）
+    cart.jsx             購物袋（實體、數位、訂閱三種商品混合）
     api.js               工具執行 / 結帳 API
-    products.js           ← 能量小物的真正資料來源，DEMO 用 localStorage，接後端後打 API
+    products.js           ← 能量小物的真正資料來源，DEMO 用 localStorage，接後端後打 API；也處理訂閱的購物袋 ID
     adminApi.js           後台登入 / token
   components/
     ProductCard.jsx  CartDrawer.jsx
   pages/
     Home.jsx  Shop.jsx  Skills.jsx  Tools.jsx
-    Admin.jsx            ← 後台，路徑 /admin，故意沒放進主導覽
+    Admin.jsx             ← 後台，路徑 /admin，故意沒放進主導覽
+    VideoScriptLanding.jsx ← 自媒體爆款短片生成器的專屬頁面，路徑 /skill/viral-video-script
 
 server/
-  index.js               Express，商品的公開讀取 + 後台 CRUD
-  store.js               JSON 檔案持久化
-  auth.js                密碼登入 + 簽章 token（沒拉 jsonwebtoken，純 Node crypto）
-  products.json           實際資料庫，重開機資料還在
+  index.js               Express，商品 CRUD、結帳、綠界 callback、客戶登入、工具執行
+  store.js               商品持久化（JSON 檔案）
+  orders.js              訂單持久化
+  entitlements.js        一次性購買的擁有權與共用判讀次數
+  subscriptions.js       訂閱狀態（見下方「訂閱方案」章節）
+  discountCodes.js       折扣碼：產生、驗證、單次兌現（見下方「折扣碼」章節）
+  auth.js                後台密碼登入 + 簽章 token
+  customerAuth.js        客戶登入（magic link）+ 簽章 token，跟後台用不同密鑰
+  lib/
+    ecpay.js             綠界金流：CheckMacValue 簽章、付款表單、callback 驗證
+    line.js              LINE 訂單通知（推播新訂單）+ webhook 回覆（打「匯總」查訂單）
+    anthropic.js         呼叫 Anthropic API 的共用函式
+    safety.js            危機關鍵字偵測（下班的緩衝用）
+    toolRunner.js         工具執行註冊表，SKILL_ID_MAP 對照購買記錄
+  prompts/
+    labelReader.js  commuteDecompress.js   已接 AI 的兩顆工具的 system prompt
 ```
 
 ---
@@ -210,6 +223,80 @@ CUSTOMER_TOKEN_SECRET=      # 客戶登入用的簽章密鑰，要跟 TOKEN_SECR
 **魔法連結還沒接真的寄信服務。** 目前 `/v1/auth/magic-link` 只把連結印在伺服器的 log 裡，客人實際上收不到信。正式上線前要接 Resend、SendGrid 之類的寄信 API，把 `server/index.js` 裡那行 `console.log` 換成真的寄信呼叫——其餘登入邏輯不用動。
 
 一次食安標示判讀呼叫大約 NT$0.3–0.6（依實際輸出長度，Sonnet 系列），圖片本身不太影響 token 成本，主要看回傳的 JSON 有多長。**下班的緩衝之後如果要接，是多輪對話**，一次收尾要 4–5 個來回，成本結構會跟其他六顆不同，上線後要單獨追蹤。
+
+### LINE 新訂單通知（選用）
+
+付款成功後可以推一則訊息到你的 LINE，不用另外開頁面看有沒有新訂單。用的是 LINE **Messaging API**，不是舊的 LINE Notify——那個已經在 2025/3/31 終止服務了，現在唯一的正規做法是官方帳號 + Messaging API。
+
+**設定步驟**：
+
+1. 去 [developers.line.biz](https://developers.line.biz) 建一個 Provider，底下開一個 **Messaging API** 頻道（免費）
+2. 頻道設定裡拿到 **Channel Access Token**（長期有效那種）
+3. 用手機掃頻道的 QR code，加這個官方帳號好友
+4. 填進 `server/.env`：
+
+```
+LINE_CHANNEL_ACCESS_TOKEN=你拿到的 token
+LINE_TARGET_ID=            # 留空就好，見下方說明
+```
+
+**`LINE_TARGET_ID` 留空的話**，系統會用 broadcast（廣播給這個官方帳號的所有好友）——一人商店只要自己加好友，效果跟指定推播一樣，還省了去查自己 `userId` 的步驟。之後如果想只推給特定一個人或一個群組，才需要填這個欄位。
+
+**這個功能刻意設計成「壞了也不影響訂單」**：`server/lib/line.js` 的 `notify()` 內部自己接住所有錯誤（沒設定、token 失效、LINE 服務打不通），永遠不會讓呼叫端跟著出錯——訂單該怎麼處理還是怎麼處理，你頂多是這次沒收到通知，不會因為 LINE 掛了就導致訂單處理失敗。
+
+Messaging API 每月有一定的免費推播則數，一人商店的訂單量通常用不到超額。
+
+**回覆指令：打「匯總」查過去 2 小時的訂單。** 這是另一個方向的功能——上面是「系統推訊息給你」，這個是「你傳訊息給系統，它回你」，需要多一步設定：
+
+1. 在同一個 Messaging API 頻道設定裡，另外拿一組 **Channel Secret**（不是 Access Token，是不同的東西，專門用來驗證 webhook 請求真的是 LINE 送來的）
+2. 填進 `server/.env`：`LINE_CHANNEL_SECRET=你拿到的 secret`
+3. 頻道設定的 **Webhook URL** 填 `https://你的後端網址/api/line/webhook`，開啟「Use webhook」
+4. 部署後，在 LINE 裡對這個官方帳號打「匯總」或「彙總」，會收到過去 2 小時的訂單數跟總收入
+
+想改成別的時間範圍（例如改成過去 24 小時），改 `server/index.js` 裡 `/api/line/webhook` 那段的 `const hours = 2` 即可。
+
+**這支端點會驗證簽章，拒絕不是 LINE 送來的請求**——`/api/line/webhook` 是公開網址，沒有驗證的話任何人都能打假訊息進來冒充新訂單資料。驗證用的是 `x-line-signature` header 加上 `LINE_CHANNEL_SECRET` 算出來的 HMAC，對不上直接回 401。
+
+```bash
+cd server
+node -e "import('./lib/line.js').then(m => console.log(m.formatSummary({count:52,total:44200}, 2)))"
+```
+
+---
+
+### 折扣碼
+
+後台可以產生一次性折扣碼，固定打七折（折扣 30%），**只打在數位工具（skills）上**，不影響能量小物或訂閱。
+
+**怎麼用**：`/admin` 後台頁面最下面有「折扣碼產生器」，點「+ 產生新折扣碼」，會出現一組像 `AB12-CD34` 這樣的碼（去掉了容易看錯的 0/O/1/I）。客人結帳時在購物袋的折扣碼欄位輸入這組碼，套用成功會即時看到折扣金額。
+
+**只能用一次是怎麼保證的**：折扣碼「用掉」這件事發生在**付款確認成功之後**（`server/index.js` 的 ecpay notify 那支），不是結帳當下——這樣設計是為了避免有人結帳到一半又棄單，卻把碼白白燒掉。結帳當下只檢查碼還沒被用過，真正標記用掉是綁在綠界回傳付款成功的那一刻。
+
+```bash
+cd server
+node -e "import('./discountCodes.js').then(m => console.log(m.generate()))"
+```
+
+跑出來的物件包含 `code`、`discountPercent`、`used`（初始是 false）。
+
+---
+
+### 訂閱方案（目前只有自媒體爆款短片生成器有）
+
+`/skill/viral-video-script` 這個專屬頁面有兩種買法：一次性 NT$850（跟其他工具共用 300 次判讀池），或訂閱 NT$300/月（這顆工具在訂閱期間不限次數，不佔共用池）。
+
+**運作方式**：
+
+- 購物袋裡訂閱項目用 `原始商品ID:sub` 表示（例如 `AP-SL-22:sub`），跟一次性購買的同一顆工具完全分開計價，兩者可以同時在購物袋裡不互相影響
+- 付款成功後，`server/subscriptions.js` 記錄這個 Email 對這顆工具的訂閱到期日，續訂會從**原本到期日往後延**，不會因為提早續訂而少算天數
+- `/v1/tool/run` 執行工具時，除了看有沒有買過（`entitlements`），也會看有沒有有效訂閱（`subscriptions`）——兩者符合其一就放行，訂閱期間完全不扣共用額度池
+
+**老實講清楚這裡的限制**：目前訂閱是「付一次錢、開通一個月」，**不是真正的自動每月扣款**。綠界的一次性收款（AioCheckOut，就是這個專案已經接好的）跟真正的訂閱扣款（定期定額，另一組 API，欄位跟簽章方式都不一樣）是兩套完全不同的整合。要做到「訂閱後每月自動扣款、不用客人手動再付一次」，需要另外接綠界的定期定額 API——這塊還沒做。現在的訂閱模式，客人月底前要手動回來續訂一次，不會被誤扣錢，但也不會自動扣。
+
+```bash
+cd server
+node -e "import('./subscriptions.js').then(m => console.log(m.subscribe('test@example.com','AP-SL-22',1)))"
+```
 
 ---
 

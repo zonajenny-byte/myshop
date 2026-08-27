@@ -8,6 +8,7 @@ import Shop from "./pages/Shop";
 import Skills from "./pages/Skills";
 import Tools from "./pages/Tools";
 import Admin from "./pages/Admin";
+import VideoScriptLanding from "./pages/VideoScriptLanding";
 
 const TAGLINE = "每天進步一點，成為更好的自己";
 
@@ -69,6 +70,7 @@ export default function App() {
           <Route path="/skills" element={<Skills />} />
           <Route path="/tools" element={<Tools />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/skill/viral-video-script" element={<VideoScriptLanding />} />
           <Route path="*" element={<Home />} />
         </Routes>
       </main>

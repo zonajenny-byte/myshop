@@ -13,6 +13,7 @@ export default function Result({ skill, data }) {
     "gift-etiquette": GiftResult,
     "style-planning": StyleResult,
     "startup-basics": StartupResult,
+    "viral-video-script": VideoScriptResult,
   };
   const C = map[skill.toolKey];
   return C ? <C r={data} /> : null;
@@ -544,6 +545,50 @@ function StartupResult({ r }) {
       {r.next_checkpoint && (
         <div className="fbox grn"><div className="fhead">下一個檢查點</div>
           <p style={{ fontSize: 13.5 }}>{r.next_checkpoint}</p></div>
+      )}
+    </>
+  );
+}
+
+/* ---------- 自媒體爆款短片生成器 ---------- */
+
+function VideoScriptResult({ r }) {
+  return (
+    <>
+      <div className="rhead"><h2>{r.topic}</h2><p>{r.platform}</p></div>
+
+      <div className="eyebrow" style={{ marginBottom: 10 }}>前三秒鉤子 · 三種寫法</div>
+      {r.hook_options?.map((h, i) => (
+        <div className="fbox lil" key={i} style={{ marginBottom: 12 }}>
+          <div className="script">「{h.line}」</div>
+          <p style={{ fontSize: 12.5, color: "var(--ink2)", marginTop: 9 }}>{h.why}</p>
+        </div>
+      ))}
+
+      <div className="card">
+        <div className="eyebrow" style={{ marginBottom: 8 }}>節奏拆解</div>
+        {r.script_outline?.map((s, i) => (
+          <div className="item" key={i}>
+            <div className="n">{s.time}　{s.beat}</div>
+            <div className="y">{s.purpose}</div>
+          </div>
+        ))}
+      </div>
+
+      {r.title_ideas?.length > 0 && (
+        <div className="fbox yel">
+          <div className="fhead">📋 標題／文案建議</div>
+          {r.title_ideas.map((t, i) => (
+            <div className="flag" key={i}><h4>「{t.text}」</h4><p>{t.why}</p></div>
+          ))}
+        </div>
+      )}
+
+      {r.notes?.length > 0 && (
+        <div className="fbox grn">
+          <div className="fhead">值得知道</div>
+          {r.notes.map((n, i) => <div className="flag" key={i}><p>{n}</p></div>)}
+        </div>
       )}
     </>
   );

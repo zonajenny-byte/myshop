@@ -80,4 +80,8 @@ export const SKILL_ID_MAP = {
   "purchase-pause": "AP-SL-08",
   "commute-decompress": "AP-SL-13",
   "home-buying": "AP-SL-16",
+  "gift-etiquette": "AP-SL-19",
+  "style-planning": "AP-SL-20",
+  "startup-basics": "AP-SL-21",
+  "viral-video-script": "AP-SL-22",
 };

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useCart, money } from "../lib/cart";
 import { SKILL_BUNDLE, SHIPPING_FEE, FREE_SHIPPING_OVER } from "../data/catalog";
 import { createOrder } from "../lib/api";
+import { demoMarkUsed } from "../lib/discountCodes";
 
 const COUNTIES = [
   "台北市","新北市","基隆市","桃園市","新竹市","新竹縣","苗栗縣","台中市",
@@ -16,6 +17,7 @@ export default function CartDrawer() {
   });
   const [msg, setMsg] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [discountInput, setDiscountInput] = useState("");
 
   if (!cart.open) return null;
 
@@ -42,6 +44,7 @@ export default function CartDrawer() {
         bundle: cart.skillsFull ? SKILL_BUNDLE.id : null,
         amount: cart.total,
         shipping: cart.shipping,
+        discountCode: cart.discount?.code || null,
         buyer: {
           name: f.name.trim(),
           email: f.email.trim(),
@@ -53,6 +56,9 @@ export default function CartDrawer() {
       });
 
       if (res.demo) {
+        // DEMO 模式沒有真的付款流程，直接在這裡模擬「結帳成功就把碼標記用掉」，
+        // 真後端的兌現時機是綁在綠界付款確認成功那一刻，不是這裡
+        if (cart.discount?.code) demoMarkUsed(cart.discount.code, f.email.trim());
         setMsg({
           t: "ok",
           m: `預覽模式：訂單 ${res.orderNo} 已建立，金額 ${money(cart.total)}。接上後端之後這裡會轉往藍新金流付款頁。`,
@@ -104,8 +110,34 @@ export default function CartDrawer() {
               </div>
             )}
 
+            <div className="flabel">折扣碼（限數位工具，限用一次）</div>
+            {cart.discount ? (
+              <div className="line" style={{ background: "var(--mint-l)", borderRadius: 14, padding: "10px 12px", border: "none" }}>
+                <span className="l-orb" style={{ background: "var(--mint)" }}>✓</span>
+                <span>{cart.discount.code}（{cart.discount.percent}% 折扣）</span>
+                <button className="rm" onClick={cart.removeDiscountCode}>移除</button>
+              </div>
+            ) : (
+              <div style={{ display: "flex", gap: 8, marginBottom: 4 }}>
+                <input className="field" style={{ marginBottom: 0 }} value={discountInput}
+                  onChange={(e) => setDiscountInput(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && cart.applyDiscountCode(discountInput)}
+                  placeholder="例如 AB12-CD34" />
+                <button className="btn soft" style={{ width: "auto", marginTop: 0, padding: "0 20px", whiteSpace: "nowrap" }}
+                  onClick={() => cart.applyDiscountCode(discountInput)} disabled={cart.discountChecking}>
+                  {cart.discountChecking ? "驗證中" : "套用"}
+                </button>
+              </div>
+            )}
+            {cart.discountError && <p className="msg err" style={{ marginTop: 4 }}>{cart.discountError}</p>}
+
             <div style={{ marginTop: 16 }}>
-              <div className="sumrow"><span>小計</span><span>{money(cart.subtotal)}</span></div>
+              <div className="sumrow"><span>小計</span><span>{money(cart.subtotal + cart.discountAmount)}</span></div>
+              {cart.discountAmount > 0 && (
+                <div className="sumrow" style={{ color: "var(--mint-d)" }}>
+                  <span>折扣碼 {cart.discount.code}</span><span>−{money(cart.discountAmount)}</span>
+                </div>
+              )}
               {cart.needsAddress && (
                 <div className="sumrow">
                   <span>運費</span>

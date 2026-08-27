@@ -70,8 +70,26 @@ export function usePhysicalProducts() {
   return list;
 }
 
+/** 訂閱項目在購物袋裡用「原始ID:sub」表示，跟一次性購買的同一顆工具分開算 */
+export const SUB_SUFFIX = ":sub";
+export const subCartId = (skillId) => `${skillId}${SUB_SUFFIX}`;
+
 /** 商品查找，涵蓋能量小物（動態）與七顆工具（靜態）。購物袋要用這個，不要用 catalog.js 的舊版。 */
 export function byId(id) {
+  if (typeof id === "string" && id.endsWith(SUB_SUFFIX)) {
+    const baseId = id.slice(0, -SUB_SUFFIX.length);
+    const base = SKILLS.find((s) => s.id === baseId);
+    if (!base?.subscription) return null;
+    return {
+      ...base,
+      id,
+      kind: "subscription",
+      linkedSkillId: base.id,
+      name: `${base.name}（訂閱）`,
+      price: base.subscription.price,
+      periodLabel: base.subscription.periodLabel,
+    };
+  }
   const physical = cache || SEED_PHYSICAL;
   return [...physical, ...SKILLS].find((p) => p.id === id);
 }

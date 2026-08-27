@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { adminLogin, adminSignOut, isAdminSignedIn } from "../lib/adminApi";
 import { usePhysicalProducts, adminCreate, adminUpdate, adminRemove, resetDemoData, resolveImageUrl } from "../lib/products";
+import { adminGenerate, adminList, adminRevoke } from "../lib/discountCodes";
 import { DEMO, imageToBase64 } from "../lib/api";
 import { money } from "../lib/cart";
 
@@ -16,6 +17,36 @@ export default function Admin() {
   const products = usePhysicalProducts();
   const [editing, setEditing] = useState(null); // null | "new" | product id
   const [form, setForm] = useState(EMPTY);
+
+  const [codes, setCodes] = useState([]);
+  const [codesBusy, setCodesBusy] = useState(false);
+
+  useEffect(() => {
+    if (signedIn) adminList().then(setCodes).catch(() => {});
+  }, [signedIn]);
+
+  async function generateCode() {
+    setCodesBusy(true);
+    try {
+      await adminGenerate();
+      setCodes(await adminList());
+    } catch (e) {
+      setErr(e.message);
+    }
+    setCodesBusy(false);
+  }
+
+  async function revokeCode(code) {
+    if (!confirm(`確定要收回折扣碼 ${code} 嗎？`)) return;
+    setCodesBusy(true);
+    try {
+      await adminRevoke(code);
+      setCodes(await adminList());
+    } catch (e) {
+      setErr(e.message);
+    }
+    setCodesBusy(false);
+  }
 
   async function login() {
     setErr(null); setBusy(true);
@@ -242,6 +273,46 @@ export default function Admin() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {!editing && (
+        <div style={{ marginTop: 36 }}>
+          <h2 style={{ fontSize: 22, marginBottom: 4 }}>折扣碼產生器</h2>
+          <p className="sub">每組碼打七折，只限數位工具（不含能量小物與訂閱），用過一次就失效。</p>
+
+          <button className="btn" onClick={generateCode} disabled={codesBusy} style={{ marginBottom: 16 }}>
+            {codesBusy ? "處理中⋯⋯" : "+ 產生新折扣碼"}
+          </button>
+
+          {codes.length === 0 ? (
+            <p className="msg">還沒有產生過折扣碼。</p>
+          ) : (
+            <div className="card">
+              {[...codes].reverse().map((c) => (
+                <div className="item" key={c.code}>
+                  <div className="n" style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <span style={{ fontFamily: "var(--mono)", letterSpacing: "0.05em" }}>{c.code}</span>
+                    <span style={{
+                      fontSize: 11, padding: "2px 10px", borderRadius: 10,
+                      background: c.used ? "var(--blush)" : "var(--mint-l)",
+                      color: c.used ? "var(--rose-d)" : "var(--mint-d)",
+                    }}>
+                      {c.used ? "已使用" : "未使用"}
+                    </span>
+                    {!c.used && (
+                      <button className="add danger" style={{ marginLeft: "auto", padding: "5px 14px", fontSize: 12 }}
+                        onClick={() => revokeCode(c.code)}>收回</button>
+                    )}
+                  </div>
+                  <div className="y">
+                    折扣 {c.discountPercent}%
+                    {c.used ? `　·　${c.usedBy || "—"} 使用於 ${new Date(c.usedAt).toLocaleString("zh-TW")}` : ""}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </section>
