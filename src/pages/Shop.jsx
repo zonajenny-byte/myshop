@@ -11,7 +11,7 @@ export default function Shop() {
         一件一件做的，數量不多。下單後 3–5 個工作天出貨，
         單筆實體商品滿 NT$2,000 免運。
       </p>
-      <div className="grid">
+      <div className="pgrid">
         {physical.map((p) => <ProductCard key={p.id} p={{ ...p, kind: "physical" }} />)}
       </div>
 

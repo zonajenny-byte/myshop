@@ -33,7 +33,7 @@ export default function Skills() {
           七顆都能在<Link to="/tools">工具台</Link>直接用。
           網頁版手機電腦都支援，不需要下載或安裝任何東西。
         </p>
-        <div className="grid">
+        <div className="pgrid">
           {wave1.map((p) => <ProductCard key={p.id} p={p} />)}
         </div>
 
@@ -66,7 +66,7 @@ export default function Skills() {
           <span className="pill mint">Wave 2 · Available Now</span>
           <h2>新上的幾顆</h2>
           <p className="sub">單顆買，還沒有套裝價。跟七顆共用同一個判讀次數池。</p>
-          <div className="grid">
+          <div className="pgrid">
             {wave2.map((p) => <ProductCard key={p.id} p={p} />)}
           </div>
         </section>

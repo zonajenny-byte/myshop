@@ -52,6 +52,52 @@ img{max-width:100%;display:block}
 .tagline{font-size:13px;color:var(--ink2);letter-spacing:.22em;
   line-height:1.5;font-style:italic;font-weight:300}
 nav{display:flex;gap:6px;margin-left:auto;flex-wrap:wrap}
+
+/* ---------- 漢堡選單（手機版）---------- */
+.hamburger{display:none;flex-direction:column;justify-content:center;gap:5px;
+  width:40px;height:40px;padding:9px;margin-right:4px;background:none;border-radius:10px}
+.hamburger span{display:block;height:2px;width:100%;background:var(--ink);border-radius:2px;
+  transition:opacity .15s ease}
+.hamburger:hover span{opacity:.6}
+/* 手機版：藏掉橫向 nav、露出漢堡 */
+@media(max-width:719px){
+  .hamburger{display:flex}
+  .nav-desktop{display:none}
+  .head-in{gap:10px}
+  .brandbox{flex:1;min-width:0}
+}
+.menu-scrim{position:fixed;inset:0;z-index:60;background:rgba(61,52,68,.4);
+  backdrop-filter:blur(3px);display:flex}
+.menu-panel{background:var(--bg);width:78%;max-width:320px;height:100%;overflow-y:auto;
+  box-shadow:4px 0 24px rgba(61,52,68,.16);animation:slideIn .22s ease}
+@keyframes slideIn{from{transform:translateX(-100%)}to{transform:translateX(0)}}
+.menu-head{display:flex;align-items:center;justify-content:space-between;
+  padding:18px 20px;border-bottom:1px solid var(--rule)}
+.menu-head .x{background:none;font-size:16px;color:var(--ink2);padding:4px 8px}
+.menu-sect{font-family:var(--mono);font-size:11px;letter-spacing:1.6px;color:var(--ink2);
+  padding:18px 20px 6px;text-transform:uppercase}
+.menu-item{display:block;width:100%;text-align:left;padding:14px 20px;font-size:15.5px;
+  color:var(--ink);background:none;border:none;border-bottom:1px solid var(--rule);
+  letter-spacing:.04em;font-family:inherit;cursor:pointer}
+.menu-item:hover{background:var(--blush);text-decoration:none}
+.menu-item.on{background:var(--blush);color:var(--rose-d)}
+
+/* ---------- 首頁公告彈窗 ---------- */
+.ann-scrim{position:fixed;inset:0;z-index:70;background:rgba(61,52,68,.55);
+  backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:24px}
+.ann-close{position:absolute;top:18px;right:18px;width:40px;height:40px;border-radius:50%;
+  background:rgba(255,255,255,.92);color:var(--ink);font-size:16px;box-shadow:var(--sh)}
+.ann-close:hover{background:#fff}
+.ann-box{background:var(--card);border-radius:22px;overflow:hidden;width:100%;max-width:420px;
+  max-height:82vh;overflow-y:auto;box-shadow:var(--sh-lg);animation:annIn .24s ease}
+@keyframes annIn{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:none}}
+.ann-tag{background:var(--hero);padding:12px 20px;font-family:var(--mono);font-size:12px;
+  letter-spacing:2px;color:var(--ink);text-transform:uppercase}
+.ann-img{width:100%;aspect-ratio:16/10;object-fit:cover;display:block}
+.ann-body{padding:20px 22px 24px}
+.ann-body h3{font-family:var(--sans);font-size:24px;font-weight:400;letter-spacing:.02em;
+  line-height:1.4;margin-bottom:10px}
+.ann-body p{font-size:14px;color:var(--ink2);line-height:1.85}
 nav a{font-size:14px;padding:9px 14px;border-radius:18px;color:var(--ink);letter-spacing:.06em}
 nav a:hover{background:var(--blush);text-decoration:none}
 nav a.on{background:var(--blush);color:var(--rose-d)}
@@ -96,6 +142,38 @@ h3{font-family:var(--tc);font-weight:500}
 
 /* ---------- product cards ---------- */
 .grid{display:grid;grid-template-columns:1fr;gap:16px}
+
+/* ---------- 瀏覽用商品卡（兩欄並排，圖大字少） ---------- */
+.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px 12px}
+@media(min-width:900px){.pgrid{grid-template-columns:repeat(3,1fr);gap:20px 16px}}
+.pcard{display:block;text-decoration:none;color:inherit}
+.pcard:hover{text-decoration:none}
+.pcard-img{position:relative;width:100%;aspect-ratio:3/4;border-radius:14px;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .18s ease,box-shadow .18s ease}
+.pcard-img img{width:100%;height:100%;object-fit:cover;display:block}
+.pcard:hover .pcard-img{transform:translateY(-3px);box-shadow:var(--sh-lg)}
+.pcard.in .pcard-img{box-shadow:0 0 0 2px var(--go)}
+.pcard-emoji{font-size:52px;line-height:1}
+.pcard-body{padding:12px 2px 0}
+.pcard-name{font-size:15px;font-weight:400;line-height:1.5;letter-spacing:.02em;
+  color:var(--ink);margin:0}
+.pcard-price{font-size:15px;color:var(--ink);margin-top:6px;letter-spacing:.02em}
+.pcard-sub{display:block;font-size:11.5px;color:var(--ink2);margin-top:2px}
+.pcard-add{width:100%;margin-top:10px;padding:9px;border-radius:14px;font-size:13.5px;
+  font-weight:500;background:var(--go);color:var(--go-ink);box-shadow:var(--sh-go);
+  letter-spacing:.08em;transition:background .15s ease}
+.pcard-add:hover{background:var(--go-d)}
+.pcard-add.on{background:var(--mint-l);color:var(--mint-d);box-shadow:none}
+.pcard-add:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+
+/* ---------- 商品詳細頁 ---------- */
+.detail-hero{display:grid;grid-template-columns:1fr;gap:20px}
+@media(min-width:720px){.detail-hero{grid-template-columns:1fr 1fr;gap:28px;align-items:start}}
+.detail-img{width:100%;aspect-ratio:3/4;border-radius:20px;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;box-shadow:var(--sh)}
+.detail-img img{width:100%;height:100%;object-fit:cover;display:block}
+.detail-info{display:flex;flex-direction:column}
 @media(min-width:720px){.grid{grid-template-columns:1fr 1fr}}
 .card{background:var(--card);border-radius:24px;box-shadow:var(--sh);padding:22px;
   display:flex;flex-direction:column;transition:transform .16s ease,box-shadow .16s ease}

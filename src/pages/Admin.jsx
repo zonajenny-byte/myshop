@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { adminLogin, adminSignOut, isAdminSignedIn } from "../lib/adminApi";
 import { usePhysicalProducts, adminCreate, adminUpdate, adminRemove, resetDemoData, resolveImageUrl } from "../lib/products";
 import { adminGenerate, adminList, adminRevoke } from "../lib/discountCodes";
+import { fetchAnnouncement, adminUpdateAnnouncement } from "../lib/announcement";
 import { DEMO, imageToBase64 } from "../lib/api";
 import { money } from "../lib/cart";
 
@@ -46,6 +47,27 @@ export default function Admin() {
       setErr(e.message);
     }
     setCodesBusy(false);
+  }
+
+  const [ann, setAnn] = useState(null);
+  const [annBusy, setAnnBusy] = useState(false);
+  const [annMsg, setAnnMsg] = useState(null);
+
+  useEffect(() => {
+    if (signedIn) fetchAnnouncement().then(setAnn).catch(() => {});
+  }, [signedIn]);
+
+  async function saveAnnouncement() {
+    setAnnBusy(true);
+    setAnnMsg(null);
+    try {
+      const saved = await adminUpdateAnnouncement(ann);
+      setAnn(saved);
+      setAnnMsg({ t: "ok", m: "公告已更新，訪客下次進首頁就會看到新內容。" });
+    } catch (e) {
+      setAnnMsg({ t: "err", m: e.message });
+    }
+    setAnnBusy(false);
   }
 
   async function login() {
@@ -273,6 +295,53 @@ export default function Admin() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {!editing && ann && (
+        <div style={{ marginTop: 36 }}>
+          <h2 style={{ fontSize: 22, marginBottom: 4 }}>首頁公告彈窗</h2>
+          <p className="sub">訪客第一次進首頁時會跳出來，關掉之後同一次瀏覽不會再跳。</p>
+
+          <div className="card">
+            <label style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+              <input type="checkbox" checked={ann.enabled}
+                onChange={(e) => setAnn({ ...ann, enabled: e.target.checked })} />
+              <span style={{ fontSize: 14 }}>啟用公告彈窗</span>
+            </label>
+
+            <div className="flabel">小標籤（顯示在最上面，選填）</div>
+            <input className="field" value={ann.title || ""}
+              onChange={(e) => setAnn({ ...ann, title: e.target.value })} placeholder="新上架" />
+
+            <div className="flabel">標題</div>
+            <input className="field" value={ann.heading || ""}
+              onChange={(e) => setAnn({ ...ann, heading: e.target.value })} placeholder="自媒體爆款短片生成器" />
+
+            <div className="flabel">內文</div>
+            <textarea className="field" value={ann.body || ""}
+              onChange={(e) => setAnn({ ...ann, body: e.target.value })}
+              placeholder="想跟客人說的話" />
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              <div>
+                <div className="flabel">按鈕文字</div>
+                <input className="field" value={ann.ctaText || ""}
+                  onChange={(e) => setAnn({ ...ann, ctaText: e.target.value })} placeholder="看完整介紹" />
+              </div>
+              <div>
+                <div className="flabel">按鈕連結</div>
+                <input className="field" value={ann.ctaLink || ""}
+                  onChange={(e) => setAnn({ ...ann, ctaLink: e.target.value })}
+                  placeholder="/skill/viral-video-script" />
+              </div>
+            </div>
+
+            <button className="btn" onClick={saveAnnouncement} disabled={annBusy}>
+              {annBusy ? "儲存中⋯⋯" : "儲存公告"}
+            </button>
+            {annMsg && <p className={"msg " + annMsg.t}>{annMsg.m}</p>}
+          </div>
         </div>
       )}
 

@@ -51,10 +51,11 @@ src/
     products.js           ← 能量小物的真正資料來源，DEMO 用 localStorage，接後端後打 API；也處理訂閱的購物袋 ID
     adminApi.js           後台登入 / token
   components/
-    ProductCard.jsx  CartDrawer.jsx
+    ProductCard.jsx  CartDrawer.jsx  AnnouncementModal.jsx
   pages/
     Home.jsx  Shop.jsx  Skills.jsx  Tools.jsx
     Admin.jsx             ← 後台，路徑 /admin，故意沒放進主導覽
+    ProductDetail.jsx / SkillDetail.jsx  商品詳細頁（卡片點進去）
     VideoScriptLanding.jsx ← 自媒體爆款短片生成器的專屬頁面，路徑 /skill/viral-video-script
 
 server/
@@ -64,6 +65,7 @@ server/
   entitlements.js        一次性購買的擁有權與共用判讀次數
   subscriptions.js       訂閱狀態（見下方「訂閱方案」章節）
   discountCodes.js       折扣碼：產生、驗證、單次兌現（見下方「折扣碼」章節）
+  announcement.js        首頁公告彈窗設定（後台可改）
   auth.js                後台密碼登入 + 簽章 token
   customerAuth.js        客戶登入（magic link）+ 簽章 token，跟後台用不同密鑰
   lib/
@@ -261,6 +263,18 @@ Messaging API 每月有一定的免費推播則數，一人商店的訂單量通
 cd server
 node -e "import('./lib/line.js').then(m => console.log(m.formatSummary({count:52,total:44200}, 2)))"
 ```
+
+---
+
+### 手機版選單與首頁公告
+
+**漢堡選單**：畫面寬度小於 720px 時，頁首的橫向分頁會自動收進左上角的三條線按鈕，點下去從左側滑出側邊選單。桌機版維持原本的橫向分頁，不受影響。
+
+**首頁公告彈窗**：訪客第一次進首頁會跳出來，關掉之後同一次瀏覽階段不會再跳（用 sessionStorage 記錄，關掉分頁就重置）。只在首頁跳，其他頁面不打擾。
+
+內容可以在 `/admin` 後台的「首頁公告彈窗」區塊直接改——小標籤、標題、內文、按鈕文字跟連結都能編輯，也能整個關掉不顯示（關掉不會清空內容，下次活動要用再打開就好）。
+
+後端連不上的時候會自動不跳彈窗，不會卡一個空白框在畫面上。
 
 ---
 

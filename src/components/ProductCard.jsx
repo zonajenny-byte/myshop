@@ -2,75 +2,52 @@ import { Link } from "react-router-dom";
 import { useCart, money } from "../lib/cart";
 import { resolveImageUrl } from "../lib/products";
 
-/** 實體與數位共用同一張卡，差別只在顯示的欄位 */
+/**
+ * 瀏覽用的商品卡：只有圖、名稱、價格。
+ * 功能說明、規格、使用限制都移到商品詳細頁，不塞在卡片裡——
+ * 兩欄並排時卡片寬度只有一半，塞太多字會擠成一團。
+ *
+ * 整張卡是連結，點任何地方都會進詳細頁；「加入」按鈕另外處理，
+ * 避免想加入購物袋卻被導走。
+ */
 export default function ProductCard({ p }) {
   const { has, toggle } = useCart();
   const inCart = has(p.id);
   const soldOut = p.kind === "physical" && p.stock === 0;
   const photo = resolveImageUrl(p.image);
+  const href = p.kind === "physical" ? `/product/${p.id}` : `/skill/${p.toolKey}`;
+
+  function onAdd(e) {
+    // 卡片本身是連結，按鈕要擋掉冒泡，不然按加入會跟著跳頁
+    e.preventDefault();
+    e.stopPropagation();
+    toggle(p.id);
+  }
 
   return (
-    <article className={"card" + (inCart ? " in" : "")}>
-      {photo ? (
-        <img className="card-photo" src={photo} alt={p.name} loading="lazy" />
-      ) : null}
-
-      <div className="card-top">
-        {!photo && <div className="orb" style={{ background: p.tint }}>{p.emoji}</div>}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div className="id">{p.id}</div>
-          <h3>{p.name}</h3>
-          <div className="en">{p.en?.toUpperCase()}</div>
-        </div>
+    <Link to={href} className={"pcard" + (inCart ? " in" : "")}>
+      <div className="pcard-img" style={{ background: p.tint }}>
+        {photo
+          ? <img src={photo} alt={p.name} loading="lazy" />
+          : <span className="pcard-emoji">{p.emoji}</span>}
       </div>
 
-      <p className="blurb">{p.blurb}</p>
-
-      {p.feat && (
-        <ul className="feat">
-          {p.feat.map((f) => <li key={f}>{f}</li>)}
-        </ul>
-      )}
-
-      {p.spec && (
-        <div className="spec">
-          {p.spec.map(([k, v]) => (
-            <div key={k}><span>{k}</span><span>{v}</span></div>
-          ))}
-        </div>
-      )}
-
-      {/* 有 detail 內容的商品才有專屬頁面，目前只有自媒體爆款短片生成器 */}
-      {p.detail && (
-        <Link to={`/skill/${p.toolKey}`} style={{ fontSize: 13, marginTop: 12, display: "inline-block" }}>
-          看完整介紹與訂閱方案 →
-        </Link>
-      )}
-
-      {p.limit && (
-        <div className="limit">
-          <b>使用限制</b>
-          <p>{p.limit}</p>
-        </div>
-      )}
-
-      <div className="card-foot">
-        <span className="price">
-          {money(p.price)}
+      <div className="pcard-body">
+        <h3 className="pcard-name">{p.name}</h3>
+        <div className="pcard-price">
+          NT.{Math.round(p.price).toLocaleString("en-US")}
           {p.subscription && (
-            <span style={{ fontSize: 11, color: "var(--ink2)", fontWeight: 400, marginLeft: 6 }}>
-              或 {money(p.subscription.price)}/{p.subscription.periodLabel}
-            </span>
+            <span className="pcard-sub">或 {money(p.subscription.price)}/{p.subscription.periodLabel}</span>
           )}
-        </span>
+        </div>
         <button
-          className={"add" + (inCart ? " on" : "")}
-          onClick={() => toggle(p.id)}
+          className={"pcard-add" + (inCart ? " on" : "")}
+          onClick={onAdd}
           disabled={soldOut}
         >
           {soldOut ? "已售完" : inCart ? "✓ 已加入" : "加入"}
         </button>
       </div>
-    </article>
+    </Link>
   );
 }

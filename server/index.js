@@ -16,6 +16,7 @@ import * as orders from "./orders.js";
 import * as entitlements from "./entitlements.js";
 import * as subscriptions from "./subscriptions.js";
 import * as discountCodes from "./discountCodes.js";
+import * as announcement from "./announcement.js";
 import * as ecpay from "./lib/ecpay.js";
 import * as line from "./lib/line.js";
 import * as anthropic from "./lib/anthropic.js";
@@ -96,6 +97,18 @@ app.delete("/api/admin/products/:id", requireAdmin, (req, res) => {
   const { ok, error } = store.remove(req.params.id);
   if (error) return res.status(404).json({ error: "not_found", message: error });
   res.json({ ok });
+});
+
+/* ---------- 首頁公告：公開讀取 ---------- */
+
+app.get("/api/announcement", (req, res) => {
+  res.json(announcement.get());
+});
+
+app.put("/api/admin/announcement", requireAdmin, (req, res) => {
+  const { item, error } = announcement.update(req.body || {});
+  if (error) return res.status(400).json({ error: "invalid", message: error });
+  res.json(item);
 });
 
 /* ---------- 後台：折扣碼產生器 ---------- */

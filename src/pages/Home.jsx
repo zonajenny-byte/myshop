@@ -27,7 +27,7 @@ export default function Home() {
         <span className="pill mint">Handmade</span>
         <h2>能量小物</h2>
         <p className="sub">一件一件做的，數量不多。</p>
-        <div className="grid">
+        <div className="pgrid">
           {physical.slice(0, 2).map((p) => <ProductCard key={p.id} p={{ ...p, kind: "physical" }} />)}
         </div>
         <p style={{ marginTop: 16 }}><Link to="/shop">看全部能量小物 →</Link></p>
@@ -37,7 +37,7 @@ export default function Home() {
         <span className="pill">AI Tools</span>
         <h2>七顆生活工具</h2>
         <p className="sub">吃得清楚、話講得出口、大決定拆得開、錢花得清楚。</p>
-        <div className="grid">
+        <div className="pgrid">
           {SKILLS.slice(0, 2).map((p) => <ProductCard key={p.id} p={p} />)}
         </div>
         <p style={{ marginTop: 16 }}><Link to="/skills">看全部七顆 →</Link></p>
