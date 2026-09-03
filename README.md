@@ -56,6 +56,7 @@ src/
     Home.jsx  Shop.jsx  Skills.jsx  Tools.jsx
     Admin.jsx             ← 後台，路徑 /admin，故意沒放進主導覽
     ProductDetail.jsx / SkillDetail.jsx  商品詳細頁（卡片點進去）
+    Articles.jsx / ArticleDetail.jsx     文章列表與內頁
     VideoScriptLanding.jsx ← 自媒體爆款短片生成器的專屬頁面，路徑 /skill/viral-video-script
 
 server/
@@ -66,6 +67,7 @@ server/
   subscriptions.js       訂閱狀態（見下方「訂閱方案」章節）
   discountCodes.js       折扣碼：產生、驗證、單次兌現（見下方「折扣碼」章節）
   announcement.js        首頁公告彈窗設定（後台可改）
+  articles.js            文章：草稿/發布、封面圖、公開與後台兩種列表
   auth.js                後台密碼登入 + 簽章 token
   customerAuth.js        客戶登入（magic link）+ 簽章 token，跟後台用不同密鑰
   lib/
@@ -263,6 +265,20 @@ Messaging API 每月有一定的免費推播則數，一人商店的訂單量通
 cd server
 node -e "import('./lib/line.js').then(m => console.log(m.formatSummary({count:52,total:44200}, 2)))"
 ```
+
+---
+
+### 文章
+
+`/articles` 是公開的文章列表，`/article/:id` 是內頁。後台的「文章」區塊可以直接打字發文——標題、分類標籤、封面圖、內文，內文空一行就是分段。
+
+**草稿與發布分開**：存成草稿的文章只有後台看得到，公開列表跟內頁都拿不到（直接打網址也是 404），寫到一半可以先存起來不怕被看到。按「發布」才會公開。
+
+**發布時間只記第一次**：已發布的文章再編輯不會把發布日期往後推，列表排序才不會因為改錯字就整個亂掉。
+
+**內文是純文字渲染**，不解析 HTML——後台輸入的東西直接當 HTML 渲染會有 XSS 風險，所以只做換行分段。
+
+封面圖跟商品照片一樣存成實體檔案放 `uploads/`，文章資料裡只存路徑，換圖時舊檔會自動刪掉。
 
 ---
 

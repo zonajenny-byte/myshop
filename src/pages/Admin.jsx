@@ -3,6 +3,7 @@ import { adminLogin, adminSignOut, isAdminSignedIn } from "../lib/adminApi";
 import { usePhysicalProducts, adminCreate, adminUpdate, adminRemove, resetDemoData, resolveImageUrl } from "../lib/products";
 import { adminGenerate, adminList, adminRevoke } from "../lib/discountCodes";
 import { fetchAnnouncement, adminUpdateAnnouncement } from "../lib/announcement";
+import { adminListArticles, adminGetArticle, adminCreateArticle, adminUpdateArticle, adminRemoveArticle } from "../lib/articles";
 import { DEMO, imageToBase64 } from "../lib/api";
 import { money } from "../lib/cart";
 
@@ -68,6 +69,64 @@ export default function Admin() {
       setAnnMsg({ t: "err", m: e.message });
     }
     setAnnBusy(false);
+  }
+
+  const EMPTY_ART = { title: "", body: "", tag: "", cover: null, published: false };
+  const [arts, setArts] = useState([]);
+  const [artEditing, setArtEditing] = useState(null); // null | "new" | id
+  const [artForm, setArtForm] = useState(EMPTY_ART);
+  const [artBusy, setArtBusy] = useState(false);
+  const [artMsg, setArtMsg] = useState(null);
+
+  useEffect(() => {
+    if (signedIn) adminListArticles().then(setArts).catch(() => {});
+  }, [signedIn]);
+
+  function startNewArticle() {
+    setArtForm(EMPTY_ART);
+    setArtEditing("new");
+    setArtMsg(null);
+  }
+
+  async function startEditArticle(id) {
+    setArtMsg(null);
+    try {
+      const a = await adminGetArticle(id);
+      setArtForm({ title: a.title, body: a.body, tag: a.tag || "", cover: a.cover, published: a.published });
+      setArtEditing(id);
+    } catch (e) { setArtMsg({ t: "err", m: e.message }); }
+  }
+
+  async function onArtCover(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const b64 = await imageToBase64(file, 1400);
+      setArtForm((f) => ({ ...f, cover: "data:image/jpeg;base64," + b64 }));
+    } catch { setArtMsg({ t: "err", m: "這張圖片讀不了，換一張試試。" }); }
+  }
+
+  async function saveArticle(publish) {
+    setArtBusy(true);
+    setArtMsg(null);
+    try {
+      const payload = { ...artForm, published: publish };
+      if (artEditing === "new") await adminCreateArticle(payload);
+      else await adminUpdateArticle(artEditing, payload);
+      setArts(await adminListArticles());
+      setArtEditing(null);
+    } catch (e) { setArtMsg({ t: "err", m: e.message }); }
+    setArtBusy(false);
+  }
+
+  async function delArticle(id) {
+    if (!confirm("確定要刪除這篇文章嗎？")) return;
+    setArtBusy(true);
+    try {
+      await adminRemoveArticle(id);
+      setArts(await adminListArticles());
+    } catch (e) { setArtMsg({ t: "err", m: e.message }); }
+    setArtBusy(false);
   }
 
   async function login() {
@@ -271,7 +330,7 @@ export default function Admin() {
         <button className="btn" onClick={startNew} style={{ marginBottom: 20 }}>+ 新增商品</button>
       )}
 
-      {!editing && (
+      {!editing && !artEditing && (
         <div className="grid">
           {products.map((p) => (
             <div className="card" key={p.id}>
@@ -298,7 +357,97 @@ export default function Admin() {
         </div>
       )}
 
-      {!editing && ann && (
+      {!editing && artEditing && (
+        <div style={{ marginTop: 36 }}>
+          <h2 style={{ fontSize: 22, marginBottom: 4 }}>
+            {artEditing === "new" ? "寫新文章" : "編輯文章"}
+          </h2>
+          <div className="card">
+            <div className="flabel">標題</div>
+            <input className="field" value={artForm.title}
+              onChange={(e) => setArtForm({ ...artForm, title: e.target.value })}
+              placeholder="為什麼我要做這些工具" />
+
+            <div className="flabel">分類標籤（選填）</div>
+            <input className="field" value={artForm.tag}
+              onChange={(e) => setArtForm({ ...artForm, tag: e.target.value })}
+              placeholder="品牌故事" />
+
+            <div className="flabel">封面圖（選填）</div>
+            {artForm.cover ? (
+              <div style={{ position: "relative", marginBottom: 12 }}>
+                <img src={resolveImageUrl(artForm.cover)} alt="封面預覽"
+                  style={{ width: "100%", aspectRatio: "16/9", objectFit: "cover", borderRadius: 14 }} />
+                <button className="add danger" onClick={() => setArtForm({ ...artForm, cover: null })}
+                  style={{ position: "absolute", top: 10, right: 10, padding: "6px 14px", fontSize: 12 }}>
+                  移除
+                </button>
+              </div>
+            ) : (
+              <label className="drop" style={{ marginBottom: 12, padding: "20px" }}>
+                <div className="ic">🖼</div>
+                <div className="t">點這裡選封面圖</div>
+                <input type="file" accept="image/*" onChange={onArtCover} style={{ display: "none" }} />
+              </label>
+            )}
+
+            <div className="flabel">內文（空一行分段）</div>
+            <textarea className="field" value={artForm.body}
+              onChange={(e) => setArtForm({ ...artForm, body: e.target.value })}
+              placeholder="想說的話⋯⋯"
+              style={{ minHeight: 240, lineHeight: 2 }} />
+
+            <button className="btn" onClick={() => saveArticle(true)} disabled={artBusy}>
+              {artBusy ? "儲存中⋯⋯" : "發布"}
+            </button>
+            <button className="btn soft" onClick={() => saveArticle(false)} disabled={artBusy}>
+              存成草稿
+            </button>
+            <button className="btn soft" onClick={() => setArtEditing(null)}>取消</button>
+            {artMsg && <p className={"msg " + artMsg.t}>{artMsg.m}</p>}
+          </div>
+        </div>
+      )}
+
+      {!editing && !artEditing && (
+        <div style={{ marginTop: 36 }}>
+          <h2 style={{ fontSize: 22, marginBottom: 4 }}>文章</h2>
+          <p className="sub">草稿只有你看得到，發布後才會出現在網站的文章頁。</p>
+
+          <button className="btn" onClick={startNewArticle} style={{ marginBottom: 16 }}>
+            + 寫新文章
+          </button>
+
+          {arts.length === 0 ? (
+            <p className="msg">還沒有文章。</p>
+          ) : (
+            <div className="card">
+              {arts.map((a) => (
+                <div className="item" key={a.id}>
+                  <div className="n" style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <span>{a.title}</span>
+                    <span style={{
+                      fontSize: 11, padding: "2px 10px", borderRadius: 10,
+                      background: a.published ? "var(--mint-l)" : "var(--blush)",
+                      color: a.published ? "var(--mint-d)" : "var(--rose-d)",
+                    }}>
+                      {a.published ? "已發布" : "草稿"}
+                    </span>
+                    <button className="add soft" style={{ marginLeft: "auto", padding: "5px 14px", fontSize: 12 }}
+                      onClick={() => startEditArticle(a.id)}>編輯</button>
+                    <button className="add danger" style={{ padding: "5px 14px", fontSize: 12 }}
+                      onClick={() => delArticle(a.id)}>刪除</button>
+                  </div>
+                  <div className="y">{a.excerpt}</div>
+                </div>
+              ))}
+            </div>
+          )}
+          {artMsg && <p className={"msg " + artMsg.t}>{artMsg.m}</p>}
+        </div>
+      )}
+
+      {!editing && !artEditing && ann && (
         <div style={{ marginTop: 36 }}>
           <h2 style={{ fontSize: 22, marginBottom: 4 }}>首頁公告彈窗</h2>
           <p className="sub">訪客第一次進首頁時會跳出來，關掉之後同一次瀏覽不會再跳。</p>
@@ -345,7 +494,7 @@ export default function Admin() {
         </div>
       )}
 
-      {!editing && (
+      {!editing && !artEditing && (
         <div style={{ marginTop: 36 }}>
           <h2 style={{ fontSize: 22, marginBottom: 4 }}>折扣碼產生器</h2>
           <p className="sub">每組碼打七折，只限數位工具（不含能量小物與訂閱），用過一次就失效。</p>

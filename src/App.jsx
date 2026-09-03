@@ -11,6 +11,8 @@ import Tools from "./pages/Tools";
 import Admin from "./pages/Admin";
 import ProductDetail from "./pages/ProductDetail";
 import SkillDetail from "./pages/SkillDetail";
+import Articles from "./pages/Articles";
+import ArticleDetail from "./pages/ArticleDetail";
 
 const TAGLINE = "每天進步一點，成為更好的自己";
 const NAV = [
@@ -18,6 +20,7 @@ const NAV = [
   ["/shop", "能量小物", false],
   ["/skills", "AI 工具", false],
   ["/tools", "工具台", false],
+  ["/articles", "文章", false],
 ];
 
 function Header({ onMenu }) {
@@ -127,6 +130,8 @@ export default function App() {
           <Route path="/admin" element={<Admin />} />
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/skill/:toolKey" element={<SkillDetail />} />
+          <Route path="/articles" element={<Articles />} />
+          <Route path="/article/:id" element={<ArticleDetail />} />
           <Route path="*" element={<Home />} />
         </Routes>
       </main>

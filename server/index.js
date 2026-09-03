@@ -17,6 +17,7 @@ import * as entitlements from "./entitlements.js";
 import * as subscriptions from "./subscriptions.js";
 import * as discountCodes from "./discountCodes.js";
 import * as announcement from "./announcement.js";
+import * as articles from "./articles.js";
 import * as ecpay from "./lib/ecpay.js";
 import * as line from "./lib/line.js";
 import * as anthropic from "./lib/anthropic.js";
@@ -95,6 +96,48 @@ app.put("/api/admin/products/:id", requireAdmin, (req, res) => {
 
 app.delete("/api/admin/products/:id", requireAdmin, (req, res) => {
   const { ok, error } = store.remove(req.params.id);
+  if (error) return res.status(404).json({ error: "not_found", message: error });
+  res.json({ ok });
+});
+
+/* ---------- 文章 ---------- */
+
+// 公開：只看得到已發布的
+app.get("/api/articles", (req, res) => {
+  res.json(articles.listPublished());
+});
+
+app.get("/api/articles/:id", (req, res) => {
+  const a = articles.getPublished(req.params.id);
+  if (!a) return res.status(404).json({ error: "not_found", message: "找不到這篇文章。" });
+  res.json(a);
+});
+
+// 後台：草稿也看得到
+app.get("/api/admin/articles", requireAdmin, (req, res) => {
+  res.json(articles.listAll());
+});
+
+app.get("/api/admin/articles/:id", requireAdmin, (req, res) => {
+  const a = articles.get(req.params.id);
+  if (!a) return res.status(404).json({ error: "not_found", message: "找不到這篇文章。" });
+  res.json(a);
+});
+
+app.post("/api/admin/articles", requireAdmin, (req, res) => {
+  const { item, error } = articles.create(req.body || {});
+  if (error) return res.status(400).json({ error: "invalid", message: error });
+  res.status(201).json(item);
+});
+
+app.put("/api/admin/articles/:id", requireAdmin, (req, res) => {
+  const { item, error } = articles.update(req.params.id, req.body || {});
+  if (error) return res.status(400).json({ error: "invalid", message: error });
+  res.json(item);
+});
+
+app.delete("/api/admin/articles/:id", requireAdmin, (req, res) => {
+  const { ok, error } = articles.remove(req.params.id);
   if (error) return res.status(404).json({ error: "not_found", message: error });
   res.json({ ok });
 });
