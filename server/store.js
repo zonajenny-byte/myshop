@@ -24,6 +24,7 @@ fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 const SEED = [
   {
     id: "PH-01",
+    category: "crystal",
     name: "月相手鍊",
     en: "Moon Phase Bracelet",
     price: 1280,
@@ -35,6 +36,7 @@ const SEED = [
   },
   {
     id: "PH-02",
+    category: "selected",
     name: "淨化白鼠尾草",
     en: "White Sage Bundle",
     price: 480,
@@ -46,6 +48,7 @@ const SEED = [
   },
   {
     id: "PH-03",
+    category: "selected",
     name: "手抄祈願筆記本",
     en: "Intention Notebook",
     price: 680,
@@ -146,6 +149,7 @@ export function create(input) {
     spec: Array.isArray(input.spec) ? input.spec.filter((r) => r[0] && r[1]) : [],
     emoji: input.emoji?.trim() || "✦",
     tint: input.tint?.trim() || "#F3EDF9",
+    category: input.category || "crystal",
     image,
   };
 

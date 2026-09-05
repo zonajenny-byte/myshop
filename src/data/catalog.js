@@ -9,10 +9,21 @@
  * 實際會顯示給使用者的清單，來自 src/lib/products.js。
  */
 
+/**
+ * 實體商品的分類。category 沒填的舊資料一律當成 crystal，
+ * 這樣後台之前上架的商品不會因為多了分類就從頁面上消失。
+ */
+export const CATEGORIES = [
+  { key: "crystal", name: "水晶", en: "Crystal", path: "/shop" },
+  { key: "selected", name: "能量選物", en: "Selected", path: "/selected" },
+];
+export const DEFAULT_CATEGORY = "crystal";
+
 export const PHYSICAL = [
   {
     id: "PH-01",
     kind: "physical",
+    category: "crystal",
     name: "月相手鍊",
     en: "Moon Phase Bracelet",
     price: 1280,
@@ -26,6 +37,7 @@ export const PHYSICAL = [
   {
     id: "PH-02",
     kind: "physical",
+    category: "selected",
     name: "淨化白鼠尾草",
     en: "White Sage Bundle",
     price: 480,
@@ -39,6 +51,7 @@ export const PHYSICAL = [
   {
     id: "PH-03",
     kind: "physical",
+    category: "selected",
     name: "手抄祈願筆記本",
     en: "Intention Notebook",
     price: 680,

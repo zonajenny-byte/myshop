@@ -16,11 +16,12 @@ import ArticleDetail from "./pages/ArticleDetail";
 
 const TAGLINE = "每天進步一點，成為更好的自己";
 const NAV = [
-  ["/", "首頁", true],
-  ["/shop", "能量小物", false],
-  ["/skills", "AI 工具", false],
-  ["/tools", "工具台", false],
-  ["/articles", "文章", false],
+  ["/", "首頁", "Home", true],
+  ["/shop", "水晶", "Crystal", false],
+  ["/selected", "能量選物", "Selected", false],
+  ["/skills", "AI 工具", "AI Tools", false],
+  ["/tools", "工具台", "Console", false],
+  ["/articles", "文章", "Journal", false],
 ];
 
 function Header({ onMenu }) {
@@ -38,9 +39,11 @@ function Header({ onMenu }) {
         </Link>
 
         <nav className="nav-desktop">
-          {NAV.map(([to, label, end]) => (
+          {NAV.map(([to, label, en, end]) => (
             <NavLink key={to} to={to} end={end}
-              className={({ isActive }) => (isActive ? "on" : "")}>{label}</NavLink>
+              className={({ isActive }) => (isActive ? "on" : "")}>
+              <span className="nav-en" data-en={en}><span>{label}</span></span>
+            </NavLink>
           ))}
         </nav>
       </div>
@@ -62,7 +65,7 @@ function MobileMenu({ open, onClose }) {
         </div>
 
         <div className="menu-sect">選單</div>
-        {NAV.map(([to, label, end]) => (
+        {NAV.map(([to, label, en, end]) => (
           <NavLink key={to} to={to} end={end} onClick={onClose}
             className={({ isActive }) => "menu-item" + (isActive ? " on" : "")}>
             {label}
@@ -124,7 +127,8 @@ export default function App() {
       <main className="wrap">
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/shop" element={<Shop />} />
+          <Route path="/shop" element={<Shop categoryKey="crystal" />} />
+          <Route path="/selected" element={<Shop categoryKey="selected" />} />
           <Route path="/skills" element={<Skills />} />
           <Route path="/tools" element={<Tools />} />
           <Route path="/admin" element={<Admin />} />

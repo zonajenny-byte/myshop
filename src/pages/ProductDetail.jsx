@@ -1,5 +1,6 @@
 import { Link, useParams } from "react-router-dom";
 import { usePhysicalProducts, resolveImageUrl } from "../lib/products";
+import { CATEGORIES, DEFAULT_CATEGORY } from "../data/catalog";
 import { useCart, money } from "../lib/cart";
 
 export default function ProductDetail() {
@@ -11,7 +12,7 @@ export default function ProductDetail() {
   if (!p) {
     return (
       <section>
-        <Link to="/shop" className="back" style={{ display: "inline-block" }}>‹ 回能量小物</Link>
+        <Link to="/shop" className="back" style={{ display: "inline-block" }}>‹ 回商品列表</Link>
         <p className="empty">找不到這個商品，可能已經下架了。</p>
       </section>
     );
@@ -20,10 +21,12 @@ export default function ProductDetail() {
   const inCart = has(p.id);
   const soldOut = p.stock === 0;
   const photo = resolveImageUrl(p.image);
+  // 從哪個分類進來就回哪個分類，不要一律丟回水晶頁
+  const cat = CATEGORIES.find((c) => c.key === (p.category || DEFAULT_CATEGORY)) || CATEGORIES[0];
 
   return (
     <>
-      <Link to="/shop" className="back" style={{ display: "inline-block" }}>‹ 回能量小物</Link>
+      <Link to={cat.path} className="back" style={{ display: "inline-block" }}>‹ 回{cat.name}</Link>
 
       <section style={{ paddingTop: 8 }}>
         <div className="detail-hero">

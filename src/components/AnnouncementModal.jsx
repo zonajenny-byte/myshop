@@ -31,8 +31,8 @@ export default function AnnouncementModal() {
 
   return (
     <div className="ann-scrim" onClick={(e) => e.target === e.currentTarget && close()}>
-      <button className="ann-close" onClick={close} aria-label="關閉公告">✕</button>
       <div className="ann-box">
+        <button className="ann-close" onClick={close} aria-label="關閉公告">✕</button>
         {ann.title && <div className="ann-tag">{ann.title}</div>}
         {photo && <img className="ann-img" src={photo} alt="" />}
         <div className="ann-body">

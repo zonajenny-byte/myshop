@@ -85,10 +85,13 @@ nav{display:flex;gap:6px;margin-left:auto;flex-wrap:wrap}
 /* ---------- 首頁公告彈窗 ---------- */
 .ann-scrim{position:fixed;inset:0;z-index:70;background:rgba(61,52,68,.55);
   backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:24px}
-.ann-close{position:absolute;top:18px;right:18px;width:40px;height:40px;border-radius:50%;
-  background:rgba(255,255,255,.92);color:var(--ink);font-size:16px;box-shadow:var(--sh)}
+/* 叉叉貼在公告框自己的右上角，所以 .ann-box 要當定位基準 */
+.ann-close{position:absolute;top:12px;right:12px;z-index:2;
+  width:34px;height:34px;border-radius:50%;
+  background:rgba(255,255,255,.94);color:var(--ink);font-size:15px;
+  box-shadow:0 2px 8px rgba(61,52,68,.18);display:flex;align-items:center;justify-content:center}
 .ann-close:hover{background:#fff}
-.ann-box{background:var(--card);border-radius:22px;overflow:hidden;width:100%;max-width:420px;
+.ann-box{position:relative;background:var(--card);border-radius:22px;overflow:hidden;width:100%;max-width:420px;
   max-height:82vh;overflow-y:auto;box-shadow:var(--sh-lg);animation:annIn .24s ease}
 @keyframes annIn{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:none}}
 .ann-tag{background:var(--hero);padding:12px 20px;font-family:var(--mono);font-size:12px;
@@ -441,3 +444,20 @@ footer .fbrand{font-size:14px;color:var(--ink);font-style:italic;
 .art-cover{width:100%;border-radius:18px;margin:22px 0;display:block}
 .art-body{margin-top:24px}
 .art-body p{font-size:15.5px;line-height:2.05;letter-spacing:.02em;margin-bottom:20px}
+
+
+/* ---------- 標題滑鼠移上去中英切換 ---------- */
+.hover-en{position:relative;display:inline-block;cursor:default}
+.hover-en > span{transition:opacity .22s ease}
+.hover-en::after{content:attr(data-en);position:absolute;left:0;top:0;white-space:nowrap;
+  opacity:0;transition:opacity .22s ease;font-family:var(--sans);letter-spacing:.06em;
+  pointer-events:none}
+.hover-en:hover > span{opacity:0}
+.hover-en:hover::after{opacity:1}
+/* 導覽列的中英切換用同一套，但字級跟著 nav 走 */
+.nav-en{position:relative;display:inline-block}
+.nav-en > span{transition:opacity .2s ease}
+.nav-en::after{content:attr(data-en);position:absolute;left:0;right:0;top:0;text-align:center;
+  opacity:0;transition:opacity .2s ease;pointer-events:none;font-family:var(--sans);letter-spacing:.05em}
+.nav-en:hover > span{opacity:0}
+.nav-en:hover::after{opacity:1}

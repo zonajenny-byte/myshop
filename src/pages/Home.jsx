@@ -14,23 +14,23 @@ export default function Home() {
           <em>三樣小物，七顆工具。都是為了讓明天好過一點。</em>
         </h1>
         <p>
-          能量小物寄到你家，AI 工具買完打開就能用，手機電腦都可以。
+          水晶與能量選物寄到你家，AI 工具買完打開就能用，手機電腦都可以。
           不用下載，也不用設定。
         </p>
         <div className="hero-cta">
           <Link to="/skills">看七顆工具</Link>
-          <Link to="/shop" className="ghost">看能量小物</Link>
+          <Link to="/shop" className="ghost">看水晶</Link>
         </div>
       </section>
 
       <section>
         <span className="pill mint">Handmade</span>
-        <h2>能量小物</h2>
+        <h2 className="hover-en" data-en="Crystal"><span>水晶</span></h2>
         <p className="sub">一件一件做的，數量不多。</p>
         <div className="pgrid">
           {physical.slice(0, 2).map((p) => <ProductCard key={p.id} p={{ ...p, kind: "physical" }} />)}
         </div>
-        <p style={{ marginTop: 16 }}><Link to="/shop">看全部能量小物 →</Link></p>
+        <p style={{ marginTop: 16 }}><Link to="/shop">看全部水晶 →</Link>　<Link to="/selected">能量選物 →</Link></p>
       </section>
 
       <section>

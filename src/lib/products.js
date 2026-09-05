@@ -120,6 +120,7 @@ export async function adminCreate(input) {
       blurb: input.blurb?.trim() || "",
       spec: (input.spec || []).filter((r) => r[0] && r[1]),
       emoji: input.emoji?.trim() || "✦", tint: input.tint?.trim() || "#F3EDF9",
+      category: input.category || "crystal",
     };
     cache = [...list, item];
     writeLocal(cache);

@@ -6,9 +6,10 @@ import { fetchAnnouncement, adminUpdateAnnouncement } from "../lib/announcement"
 import { adminListArticles, adminGetArticle, adminCreateArticle, adminUpdateArticle, adminRemoveArticle } from "../lib/articles";
 import { DEMO, imageToBase64 } from "../lib/api";
 import { money } from "../lib/cart";
+import { CATEGORIES, DEFAULT_CATEGORY } from "../data/catalog";
 
 const EMPTY = { id: "", name: "", en: "", price: "", stock: "", blurb: "", emoji: "✦", tint: "#F3EDF9",
-  image: null, spec: [["", ""], ["", ""], ["", ""]] };
+  image: null, category: DEFAULT_CATEGORY, spec: [["", ""], ["", ""], ["", ""]] };
 
 export default function Admin() {
   const [signedIn, setSignedIn] = useState(isAdminSignedIn());
@@ -151,6 +152,7 @@ export default function Admin() {
       id: p.id, name: p.name, en: p.en || "", price: p.price, stock: p.stock ?? "",
       blurb: p.blurb || "", emoji: p.emoji || "✦", tint: p.tint || "#F3EDF9",
       image: p.image || null,
+      category: p.category || DEFAULT_CATEGORY,
       spec: [...(p.spec || []), ["", ""], ["", ""], ["", ""]].slice(0, 3),
     });
     setEditing(p.id);
@@ -207,7 +209,7 @@ export default function Admin() {
       <section>
         <div className="hero">
           <div className="tag">後台</div>
-          <h1>上架新商品<em>能量小物專用，AI 工具的商品清單不在這裡改</em></h1>
+          <h1>上架新商品<em>水晶與能量選物專用，AI 工具的商品清單不在這裡改</em></h1>
         </div>
         <div className="card" style={{ maxWidth: 420 }}>
           <div className="flabel">後台密碼</div>
@@ -231,7 +233,7 @@ export default function Admin() {
     <section>
       <div className="hero">
         <div className="tag">後台 · {products.length} 件上架中</div>
-        <h1>能量小物管理<em>加、改、下架，客人立刻看得到</em></h1>
+        <h1>商品管理<em>加、改、下架，客人立刻看得到</em></h1>
         <div style={{ display: "flex", gap: 10, marginTop: 18, flexWrap: "wrap" }}>
           <button className="credit" onClick={signOut}>登出</button>
           {DEMO && <button className="credit" onClick={resetDemoData}>還原範例資料</button>}
@@ -274,6 +276,12 @@ export default function Admin() {
                 style={{ display: "none" }} disabled={photoBusy} />
             </label>
           )}
+
+          <div className="flabel">分類</div>
+          <select className="field" value={form.category || DEFAULT_CATEGORY}
+            onChange={(e) => setForm({ ...form, category: e.target.value })}>
+            {CATEGORIES.map((c) => <option key={c.key} value={c.key}>{c.name}</option>)}
+          </select>
 
           <div className="flabel">名稱</div>
           <input className="field" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -348,6 +356,9 @@ export default function Admin() {
               <p className="blurb">{p.blurb}</p>
               <div className="card-foot">
                 <span className="price">{money(p.price)}</span>
+                <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 8, background: "var(--blush)", color: "var(--rose-d)" }}>
+                  {(CATEGORIES.find((c) => c.key === (p.category || DEFAULT_CATEGORY)) || CATEGORIES[0]).name}
+                </span>
                 <span style={{ fontSize: 12, color: "var(--ink2)" }}>庫存 {p.stock}</span>
                 <button className="add soft" onClick={() => startEdit(p)} style={{ marginLeft: "auto" }}>編輯</button>
                 <button className="add danger" onClick={() => del(p.id)}>下架</button>
@@ -497,7 +508,7 @@ export default function Admin() {
       {!editing && !artEditing && (
         <div style={{ marginTop: 36 }}>
           <h2 style={{ fontSize: 22, marginBottom: 4 }}>折扣碼產生器</h2>
-          <p className="sub">每組碼打七折，只限數位工具（不含能量小物與訂閱），用過一次就失效。</p>
+          <p className="sub">每組碼打七折，只限數位工具（不含實體商品與訂閱），用過一次就失效。</p>
 
           <button className="btn" onClick={generateCode} disabled={codesBusy} style={{ marginBottom: 16 }}>
             {codesBusy ? "處理中⋯⋯" : "+ 產生新折扣碼"}
