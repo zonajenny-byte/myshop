@@ -121,6 +121,7 @@ export async function adminCreate(input) {
       spec: (input.spec || []).filter((r) => r[0] && r[1]),
       emoji: input.emoji?.trim() || "✦", tint: input.tint?.trim() || "#F3EDF9",
       category: input.category || "crystal",
+      image2: input.image2 || null,
     };
     cache = [...list, item];
     writeLocal(cache);

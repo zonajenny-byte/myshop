@@ -9,7 +9,7 @@ import { money } from "../lib/cart";
 import { CATEGORIES, DEFAULT_CATEGORY } from "../data/catalog";
 
 const EMPTY = { id: "", name: "", en: "", price: "", stock: "", blurb: "", emoji: "✦", tint: "#F3EDF9",
-  image: null, category: DEFAULT_CATEGORY, spec: [["", ""], ["", ""], ["", ""]] };
+  image: null, image2: null, category: DEFAULT_CATEGORY, spec: [["", ""], ["", ""], ["", ""]] };
 
 export default function Admin() {
   const [signedIn, setSignedIn] = useState(isAdminSignedIn());
@@ -152,6 +152,7 @@ export default function Admin() {
       id: p.id, name: p.name, en: p.en || "", price: p.price, stock: p.stock ?? "",
       blurb: p.blurb || "", emoji: p.emoji || "✦", tint: p.tint || "#F3EDF9",
       image: p.image || null,
+      image2: p.image2 || null,
       category: p.category || DEFAULT_CATEGORY,
       spec: [...(p.spec || []), ["", ""], ["", ""], ["", ""]].slice(0, 3),
     });
@@ -165,22 +166,22 @@ export default function Admin() {
 
   const [photoBusy, setPhotoBusy] = useState(false);
 
-  async function onPhotoSelect(e) {
+  async function onPhotoSelect(e, field = "image") {
     const file = e.target.files?.[0];
     if (!file) return;
     setPhotoBusy(true);
     try {
       // imageToBase64 固定輸出 JPEG，並已經做過壓縮，適合直接當商品照存
       const b64 = await imageToBase64(file, 1200);
-      setForm((f) => ({ ...f, image: "data:image/jpeg;base64," + b64 }));
+      setForm((f) => ({ ...f, [field]: "data:image/jpeg;base64," + b64 }));
     } catch {
       setErr("這張圖片讀不了，換一張試試。");
     }
     setPhotoBusy(false);
   }
 
-  function removePhoto() {
-    setForm((f) => ({ ...f, image: null }));
+  function removePhoto(field = "image") {
+    setForm((f) => ({ ...f, [field]: null }));
   }
 
   async function save() {
@@ -257,12 +258,12 @@ export default function Admin() {
             {editing === "new" ? "新增商品" : "編輯商品"}
           </h2>
 
-          <div className="flabel">展示圖（選填，沒有的話會用 emoji 圓標代替）</div>
+          <div className="flabel">主圖（選填，沒有的話會用 emoji 圓標代替）</div>
           {form.image ? (
             <div style={{ position: "relative", marginBottom: 12 }}>
-              <img src={resolveImageUrl(form.image)} alt="商品預覽"
+              <img src={resolveImageUrl(form.image)} alt="主圖預覽"
                 style={{ width: "100%", aspectRatio: "4/3", objectFit: "cover", borderRadius: 16 }} />
-              <button className="add danger" onClick={removePhoto}
+              <button className="add danger" onClick={() => removePhoto("image")}
                 style={{ position: "absolute", top: 10, right: 10, padding: "8px 16px", fontSize: 13 }}>
                 移除
               </button>
@@ -272,7 +273,27 @@ export default function Admin() {
               <div className="ic">📷</div>
               <div className="t">{photoBusy ? "處理中⋯⋯" : "點這裡選一張照片"}</div>
               <div className="s">會自動壓縮，手機拍的照片也能直接用</div>
-              <input type="file" accept="image/*" onChange={onPhotoSelect}
+              <input type="file" accept="image/*" onChange={(e) => onPhotoSelect(e, "image")}
+                style={{ display: "none" }} disabled={photoBusy} />
+            </label>
+          )}
+
+          <div className="flabel">第二張圖（選填，客人滑鼠移到商品上會換成這張）</div>
+          {form.image2 ? (
+            <div style={{ position: "relative", marginBottom: 12 }}>
+              <img src={resolveImageUrl(form.image2)} alt="第二張圖預覽"
+                style={{ width: "100%", aspectRatio: "4/3", objectFit: "cover", borderRadius: 16 }} />
+              <button className="add danger" onClick={() => removePhoto("image2")}
+                style={{ position: "absolute", top: 10, right: 10, padding: "8px 16px", fontSize: 13 }}>
+                移除
+              </button>
+            </div>
+          ) : (
+            <label className="drop" style={{ marginBottom: 12, padding: "24px 20px" }}>
+              <div className="ic">🔄</div>
+              <div className="t">{photoBusy ? "處理中⋯⋯" : "點這裡選第二張照片"}</div>
+              <div className="s">沒有也沒關係，就不會有換圖效果</div>
+              <input type="file" accept="image/*" onChange={(e) => onPhotoSelect(e, "image2")}
                 style={{ display: "none" }} disabled={photoBusy} />
             </label>
           )}
