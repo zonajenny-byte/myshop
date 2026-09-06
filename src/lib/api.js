@@ -35,7 +35,7 @@ async function request(path, { method = "POST", body } = {}) {
   return data;
 }
 
-/** 建立訂單，回傳藍新金流所需的自動送出表單 */
+/** 建立訂單，回傳綠界金流所需的自動送出表單 */
 export async function createOrder(order) {
   if (DEMO) {
     await sleep(700);

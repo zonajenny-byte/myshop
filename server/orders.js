@@ -21,7 +21,7 @@ function save(list) {
 
 let orders = load();
 
-/** 商店訂單編號：藍新限制英數字、長度上限，這裡用時間戳＋亂碼湊 20 碼內 */
+/** 商店訂單編號：綠界限制英數字、最多 20 碼，這裡用時間戳＋亂碼湊在限制內 */
 function genOrderNo() {
   const ts = Date.now().toString(36).toUpperCase();
   const rand = crypto.randomBytes(3).toString("hex").toUpperCase();
@@ -37,7 +37,7 @@ export function create({ items, bundle, amount, shipping, buyer, shippingTo, dis
     status: "pending", // pending → paid | failed
     createdAt: new Date().toISOString(),
     paidAt: null,
-    tradeNo: null, // 藍新那邊的交易序號，付款成功才會有
+    tradeNo: null, // 綠界那邊的交易序號，付款成功才會有
   };
   orders = [...orders, order];
   save(orders);

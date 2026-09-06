@@ -61,10 +61,10 @@ export default function CartDrawer() {
         if (cart.discount?.code) demoMarkUsed(cart.discount.code, f.email.trim());
         setMsg({
           t: "ok",
-          m: `預覽模式：訂單 ${res.orderNo} 已建立，金額 ${money(cart.total)}。接上後端之後這裡會轉往藍新金流付款頁。`,
+          m: `預覽模式：訂單 ${res.orderNo} 已建立，金額 ${money(cart.total)}。接上後端之後這裡會轉往綠界金流付款頁。`,
         });
       } else if (res.formHtml) {
-        // 後端回傳藍新的自動送出表單
+        // 後端回傳綠界的自動送出表單
         document.body.insertAdjacentHTML("beforeend", res.formHtml);
         document.getElementById("checkout-form")?.submit();
       }
@@ -189,7 +189,7 @@ export default function CartDrawer() {
               placeholder="選填" />
 
             <button className="btn" onClick={pay} disabled={busy}>
-              {busy ? "處理中⋯⋯" : "用藍新金流付款"}
+              {busy ? "處理中⋯⋯" : "結帳"}
             </button>
 
             {msg && <p className={"msg " + msg.t}>{msg.m}</p>}
