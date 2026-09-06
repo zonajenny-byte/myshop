@@ -25,6 +25,7 @@ import * as announcement from "./announcement.js";
 import * as articles from "./articles.js";
 import * as ecpay from "./lib/ecpay.js";
 import * as line from "./lib/line.js";
+import * as email from "./lib/email.js";
 import * as anthropic from "./lib/anthropic.js";
 import { TOOLS, SKILL_ID_MAP } from "./lib/toolRunner.js";
 
@@ -57,6 +58,9 @@ if (!anthropic.isConfigured()) {
 }
 if (!line.isConfigured()) {
   console.log("ℹ️  LINE_CHANNEL_ACCESS_TOKEN 沒設定，新訂單不會推播到 LINE（不影響其他功能）。");
+}
+if (!email.isConfigured()) {
+  console.warn("⚠️  RESEND_API_KEY 沒設定，客人收不到登入連結與訂單確認信（登入連結會印在 log）。");
 }
 if (line.isConfigured() && !line.isWebhookConfigured()) {
   console.log("ℹ️  LINE_CHANNEL_SECRET 沒設定，「匯總」這類回覆指令不會運作（推播仍正常）。");
@@ -276,23 +280,24 @@ app.post("/api/ecpay/notify", (req, res) => {
   if (success) {
     orders.markPaid(orderNo, data.TradeNo || null);
     const items = order.items || [];
-    const email = order.buyer?.email;
+    // 不叫 email，避免蓋掉 import 進來的 email 模組
+    const email_addr = order.buyer?.email;
 
     // 訂閱項目用 "AP-SL-xx:sub" 表示，跟一次性購買分開處理
     const subIds = items.filter((id) => id.endsWith(":sub"));
     const oneTimeDigitalIds = items.filter((id) => id.startsWith("AP-SL-") && !id.endsWith(":sub"));
 
-    if (oneTimeDigitalIds.length > 0 && email) {
-      entitlements.grant(email, oneTimeDigitalIds);
+    if (oneTimeDigitalIds.length > 0 && email_addr) {
+      entitlements.grant(email_addr, oneTimeDigitalIds);
     }
-    if (subIds.length > 0 && email) {
+    if (subIds.length > 0 && email_addr) {
       for (const subId of subIds) {
         const skillId = subId.slice(0, -":sub".length);
-        subscriptions.subscribe(email, skillId, 1); // 目前一次付款開通一個月，不是自動續扣
+        subscriptions.subscribe(email_addr, skillId, 1); // 目前一次付款開通一個月，不是自動續扣
       }
     }
     if (order.discountCode) {
-      const result = discountCodes.redeem(order.discountCode, email);
+      const result = discountCodes.redeem(order.discountCode, email_addr);
       if (result.error) {
         // 理論上結帳當下已經檢查過還沒用，這裡失敗多半是極少見的競態——
         // 訂單本身已經付款成功，不該因為這個回滾，只留 log 讓人知道要人工看一下
@@ -300,10 +305,22 @@ app.post("/api/ecpay/notify", (req, res) => {
       }
     }
 
-    // LINE 通知是錦上添花，不能讓它影響訂單本身有沒有處理成功——
-    // 用 line.notify() 內建的錯誤處理，這裡不用包 try/catch，也不 await，
-    // 讓它在背景跑，不拖慢對綠界的回應時間
+    // 通知類的東西都是錦上添花，不能影響訂單本身有沒有處理成功。
+    // 兩支都自己接住錯誤，這裡不包 try/catch 也不 await，
+    // 讓它們在背景跑，不拖慢對綠界的回應時間（綠界等太久會重送通知）
     line.notify(line.formatOrderNotification({ ...order, status: "paid" }));
+
+    if (email_addr) {
+      const tpl = email.orderConfirmTemplate({ ...order, status: "paid" });
+      email.send({ to: email_addr, subject: tpl.subject, html: tpl.html });
+
+      // 有買數位商品的話，順便把登入連結寄過去，客人不用自己再去要一次
+      if (oneTimeDigitalIds.length > 0 || subIds.length > 0) {
+        const loginLink = `${FRONTEND_URL}/tools?token=${issueCustomerToken(email_addr)}`;
+        const loginTpl = email.magicLinkTemplate(loginLink);
+        email.send({ to: email_addr, subject: loginTpl.subject, html: loginTpl.html });
+      }
+    }
   } else {
     orders.markFailed(orderNo, data.RtnMsg || "unknown");
   }
@@ -367,14 +384,21 @@ app.post("/api/line/webhook", (req, res) => {
  * 正式上線前把下面的 console.log 換成真的寄信 API 呼叫。
  */
 app.post("/v1/auth/magic-link", (req, res) => {
-  const { email } = req.body || {};
-  if (!email?.includes("@")) {
+  // 這裡刻意不叫 email，避免蓋掉上面 import 進來的 email 模組
+  const customerEmail = req.body?.email;
+  if (!customerEmail?.includes("@")) {
     return res.status(400).json({ error: "invalid", message: "Email 格式不對。" });
   }
-  const token = issueCustomerToken(email);
+  const token = issueCustomerToken(customerEmail);
   const link = `${FRONTEND_URL}/tools?token=${token}`;
-  // TODO：換成真的寄信服務。目前只印在 log，客人收不到信。
-  console.log(`[magic-link] ${email} → ${link}`);
+
+  const tpl = email.magicLinkTemplate(link);
+  email.send({ to: customerEmail, subject: tpl.subject, html: tpl.html });
+
+  // 沒設定寄信服務時仍印在 log，開發階段可以自己複製連結測試
+  if (!email.isConfigured()) console.log(`[magic-link] ${customerEmail} → ${link}`);
+
+  // 不管信有沒有寄成功都回 ok——不要讓外人能用這支端點試探哪些 Email 存在
   res.json({ ok: true });
 });
 
@@ -451,4 +475,5 @@ app.listen(port, "0.0.0.0", () => {
   console.log(`myshop server listening on 0.0.0.0:${port}`);
   console.log(`綠界金流: ${ecpay.isConfigured() ? "已設定" : "尚未設定"}`);
   console.log(`LINE 訂單通知: ${line.isConfigured() ? "已設定" : "尚未設定（選用功能）"}`);
+  console.log(`寄信服務: ${email.isConfigured() ? "已設定" : "尚未設定"}`);
 });

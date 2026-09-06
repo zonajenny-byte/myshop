@@ -73,6 +73,7 @@ server/
   lib/
     ecpay.js             綠界金流：CheckMacValue 簽章、付款表單、callback 驗證
     line.js              LINE 訂單通知（推播新訂單）+ webhook 回覆（打「匯總」查訂單）
+    email.js             寄信（Resend）：登入連結、訂單確認信
     anthropic.js         呼叫 Anthropic API 的共用函式
     safety.js            危機關鍵字偵測（下班的緩衝用）
     toolRunner.js         工具執行註冊表，SKILL_ID_MAP 對照購買記錄
@@ -227,6 +228,30 @@ CUSTOMER_TOKEN_SECRET=      # 客戶登入用的簽章密鑰，要跟 TOKEN_SECR
 **魔法連結還沒接真的寄信服務。** 目前 `/v1/auth/magic-link` 只把連結印在伺服器的 log 裡，客人實際上收不到信。正式上線前要接 Resend、SendGrid 之類的寄信 API，把 `server/index.js` 裡那行 `console.log` 換成真的寄信呼叫——其餘登入邏輯不用動。
 
 一次食安標示判讀呼叫大約 NT$0.3–0.6（依實際輸出長度，Sonnet 系列），圖片本身不太影響 token 成本，主要看回傳的 JSON 有多長。**下班的緩衝之後如果要接，是多輪對話**，一次收尾要 4–5 個來回，成本結構會跟其他六顆不同，上線後要單獨追蹤。
+
+### 寄信（Resend）
+
+**賣數位商品前這個一定要設定**——不然客人付了錢收不到登入連結，拿不到買的東西。
+
+會寄兩種信：
+
+- **登入連結**：客人在工具台輸入 Email 索取，或買了數位商品後自動寄出
+- **訂單確認信**：付款成功後寄，內容依訂單類型變化（有實體商品才提出貨時間，有收件地址才顯示地址）
+
+設定：
+
+```
+RESEND_API_KEY=          # resend.com 註冊後拿
+RESEND_FROM=AuraPlayground <noreply@auraplayground.com>
+```
+
+**寄件網域要先在 Resend 後台驗證**。還沒驗證前預設會用 `onboarding@resend.dev`，但那個只能寄給你自己註冊的信箱，客人收不到——正式上線前一定要驗證自己的網域。
+
+免費方案每月 3000 封、**每天上限 100 封**。一般訂單量夠用，但如果做活動一天可能超過 100 筆訂單，要先升級方案，不然當天後面的信會寄不出去。
+
+**寄信失敗不會影響訂單**：`lib/email.js` 自己接住所有錯誤，訂單該怎麼處理還是怎麼處理，客人頂多是沒收到信，不會因為 Resend 掛掉就導致付款成功卻訂單失敗。沒設定金鑰時，登入連結仍會印在伺服器 log，開發階段可以自己複製來測。
+
+---
 
 ### LINE 新訂單通知（選用）
 
