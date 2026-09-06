@@ -12,11 +12,14 @@ export const adminToken = {
  * DEMO 模式：任何非空密碼都能登入，純粹是為了讓你先摸一輪介面。
  * 接上後端之後，密碼要對到後端 .env 裡的 ADMIN_PASSWORD 才會過。
  */
+/** DEMO 模式發的假 token 用這個前綴標記，接上真後端後才認得出來要丟掉 */
+const DEMO_PREFIX = "demo-admin-";
+
 export async function adminLogin(password) {
   if (!password) throw new Error("請輸入密碼。");
 
   if (DEMO) {
-    adminToken.set("demo-admin-" + Date.now());
+    adminToken.set(DEMO_PREFIX + Date.now());
     return;
   }
 
@@ -35,5 +38,21 @@ export function adminSignOut() {
 }
 
 export function isAdminSignedIn() {
-  return !!adminToken.get();
+  const t = adminToken.get();
+  if (!t) return false;
+
+  // 接上真後端之後，瀏覽器裡可能還留著 DEMO 模式登入時發的假 token。
+  // 只看「有沒有 token」的話會誤判成已登入，讓人進得了後台畫面，
+  // 但每個 API 請求都會被後端擋成 401——看起來就像「登入了卻什麼都不能做」。
+  // 這裡主動清掉，逼使用者用真密碼重新登入一次。
+  if (!DEMO && t.startsWith(DEMO_PREFIX)) {
+    adminToken.clear();
+    return false;
+  }
+  // 反過來，切回 DEMO 模式時舊的真 token 也沒意義，一併清掉
+  if (DEMO && !t.startsWith(DEMO_PREFIX)) {
+    adminToken.clear();
+    return false;
+  }
+  return true;
 }
