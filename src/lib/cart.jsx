@@ -87,6 +87,9 @@ export function CartProvider({ children }) {
 
     const physicalTotal = physical.reduce((a, b) => a + b.price, 0);
     const subtotal = physicalTotal + discountedDigitalTotal + subscriptionTotal;
+    // 給畫面「小計」那行用：商品原價加總，還沒扣折扣也還沒加運費。
+    // 不能用 subtotal + discountAmount 反推，那樣跟上面的商品行對不起來。
+    const itemsTotal = physicalTotal + digitalTotal + subscriptionTotal;
 
     // 只有實體商品要運費；純數位訂單不收
     const shipping =
@@ -94,7 +97,7 @@ export function CartProvider({ children }) {
 
     return {
       ids, items, physical, digital, subscriptions, skillsFull,
-      digitalTotal, discountAmount, discount, discountError, discountChecking,
+      digitalTotal, itemsTotal, discountAmount, discount, discountError, discountChecking,
       subtotal, shipping, total: subtotal + shipping,
       needsAddress: physical.length > 0,
       count: items.length,

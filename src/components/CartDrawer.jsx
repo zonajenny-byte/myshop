@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useCart, money } from "../lib/cart";
-import { SKILL_BUNDLE, SHIPPING_FEE, FREE_SHIPPING_OVER } from "../data/catalog";
+import { SKILL_BUNDLE, WAVE_1_IDS, SHIPPING_FEE, FREE_SHIPPING_OVER } from "../data/catalog";
 import { createOrder } from "../lib/api";
 import { demoMarkUsed } from "../lib/discountCodes";
 
@@ -96,7 +96,7 @@ export default function CartDrawer() {
                 <span className="l-orb" style={{ background: p.tint }}>{p.emoji}</span>
                 <span>{p.name}</span>
                 <span className="l-amt">
-                  {cart.skillsFull && p.kind === "digital" ? "—" : money(p.price)}
+                  {cart.skillsFull && WAVE_1_IDS.includes(p.id) ? "—" : money(p.price)}
                 </span>
                 <button className="rm" onClick={() => cart.remove(p.id)}>移除</button>
               </div>
@@ -132,7 +132,7 @@ export default function CartDrawer() {
             {cart.discountError && <p className="msg err" style={{ marginTop: 4 }}>{cart.discountError}</p>}
 
             <div style={{ marginTop: 16 }}>
-              <div className="sumrow"><span>小計</span><span>{money(cart.subtotal + cart.discountAmount)}</span></div>
+              <div className="sumrow"><span>小計</span><span>{money(cart.itemsTotal)}</span></div>
               {cart.discountAmount > 0 && (
                 <div className="sumrow" style={{ color: "var(--mint-d)" }}>
                   <span>折扣碼 {cart.discount.code}</span><span>−{money(cart.discountAmount)}</span>
