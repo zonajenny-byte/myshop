@@ -433,8 +433,11 @@ app.post("/api/notify", (req, res) => {
 });
 
 const port = process.env.PORT || 3000;
-app.listen(port, () => {
-  console.log(`myshop server listening on :${port}`);
+// 一定要綁 0.0.0.0，不能用預設的 localhost——
+// Railway、Render 這類平台的路由層是從容器外面連進來的，
+// 只聽 localhost 的話它們找不到服務，會回「train has not arrived」之類的錯誤。
+app.listen(port, "0.0.0.0", () => {
+  console.log(`myshop server listening on 0.0.0.0:${port}`);
   console.log(`綠界金流: ${ecpay.isConfigured() ? "已設定" : "尚未設定"}`);
   console.log(`LINE 訂單通知: ${line.isConfigured() ? "已設定" : "尚未設定（選用功能）"}`);
 });
