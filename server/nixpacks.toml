@@ -1,0 +1,6 @@
+# 明確告訴 Railway 這是 Node.js 專案，不要當成靜態網站用 Caddy 服務。
+# 沒有這個檔案時，Railway 有機會誤判成前端專案，啟動 Caddy 而不是跑 node。
+providers = ["node"]
+
+[start]
+cmd = "node index.js"
