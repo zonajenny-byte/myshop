@@ -1,4 +1,5 @@
-import { API_BASE, DEMO, token } from "./api";
+import { API_BASE, DEMO } from "./api";
+import { adminToken } from "./adminApi";
 
 const LS_KEY = "ap.demo.announcement";
 
@@ -42,7 +43,7 @@ export async function adminUpdateAnnouncement(input) {
   }
   const res = await fetch(API_BASE + "/api/admin/announcement", {
     method: "PUT",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token.get()}` },
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${adminToken.get()}` },
     body: JSON.stringify(input),
   });
   const data = await res.json().catch(() => ({}));

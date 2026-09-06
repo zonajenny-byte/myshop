@@ -1,4 +1,5 @@
-import { API_BASE, DEMO, token } from "./api";
+import { API_BASE, DEMO } from "./api";
+import { adminToken } from "./adminApi";
 
 const LS_KEY = "ap.demo.discountCodes";
 
@@ -20,7 +21,7 @@ function genCode() {
 async function authedFetch(path, opts = {}) {
   const res = await fetch(API_BASE + path, {
     ...opts,
-    headers: { Authorization: `Bearer ${token.get()}`, ...(opts.headers || {}) },
+    headers: { Authorization: `Bearer ${adminToken.get()}`, ...(opts.headers || {}) },
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.message || `請求失敗（${res.status}）`);

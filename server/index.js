@@ -5,6 +5,11 @@
  *   npm install
  *   npm run dev
  */
+
+// 這行放在所有 import 之前，只要這支檔案有被 Node 執行到就會印出來。
+// 部署平台的 log 若連這行都沒有，代表跑的根本不是這支程式。
+console.log("[BOOT] myshop server 檔案已載入 | node", process.version, "| PORT =", process.env.PORT ?? "(未注入)");
+
 import express from "express";
 import cors from "cors";
 import path from "node:path";
@@ -98,6 +103,12 @@ app.delete("/api/admin/products/:id", requireAdmin, (req, res) => {
   const { ok, error } = store.remove(req.params.id);
   if (error) return res.status(404).json({ error: "not_found", message: error });
   res.json({ ok });
+});
+
+/* ---------- 健康檢查：確認服務真的活著用 ---------- */
+
+app.get("/health", (req, res) => {
+  res.json({ ok: true, service: "myshop-server", port: process.env.PORT || 3000, time: new Date().toISOString() });
 });
 
 /* ---------- 文章 ---------- */

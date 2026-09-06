@@ -1,4 +1,5 @@
-import { API_BASE, DEMO, token } from "./api";
+import { API_BASE, DEMO } from "./api";
+import { adminToken } from "./adminApi";
 
 const LS_KEY = "ap.demo.articles";
 
@@ -36,7 +37,7 @@ function excerpt(body) {
 async function authedFetch(path, opts = {}) {
   const res = await fetch(API_BASE + path, {
     ...opts,
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token.get()}`, ...(opts.headers || {}) },
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${adminToken.get()}`, ...(opts.headers || {}) },
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.message || `請求失敗（${res.status}）`);
