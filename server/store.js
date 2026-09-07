@@ -24,6 +24,7 @@ fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 const SEED = [
   {
     id: "PH-01",
+    kind: "physical",
     category: "crystal",
     name: "月相手鍊",
     en: "Moon Phase Bracelet",
@@ -38,6 +39,7 @@ const SEED = [
   },
   {
     id: "PH-02",
+    kind: "physical",
     category: "selected",
     name: "淨化白鼠尾草",
     en: "White Sage Bundle",
@@ -52,6 +54,7 @@ const SEED = [
   },
   {
     id: "PH-03",
+    kind: "physical",
     category: "selected",
     name: "手抄祈願筆記本",
     en: "Intention Notebook",
@@ -158,6 +161,9 @@ export function create(input) {
     emoji: input.emoji?.trim() || "✦",
     tint: input.tint?.trim() || "#F3EDF9",
     category: input.category || "crystal",
+    // 這支 store 只管實體商品，kind 固定 physical。
+    // 前端購物袋靠 kind 分類（算運費、判斷要不要收地址），少了它會被當成不明品項而漏算。
+    kind: "physical",
     image,
     image2,
   };

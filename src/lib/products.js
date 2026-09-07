@@ -50,7 +50,11 @@ export async function fetchPhysical() {
     return cache;
   }
   const res = await fetch(API_BASE + "/api/products");
-  cache = await res.json();
+  const list = await res.json();
+  // 後端早期版本存的商品沒有 kind 欄位，購物袋靠 kind 分類（算運費、判斷收不收地址），
+  // 少了它會被當成不明品項、金額整個漏算。在資料進來的源頭統一補上，
+  // 比在每個使用端各補一次可靠。
+  cache = Array.isArray(list) ? list.map((p) => (p.kind ? p : { ...p, kind: "physical" })) : [];
   return cache;
 }
 
