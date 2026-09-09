@@ -488,3 +488,9 @@ footer .fbrand{font-size:14px;color:var(--ink);font-style:italic;
   opacity:0;transition:opacity .2s ease;pointer-events:none;font-family:var(--sans);letter-spacing:.05em}
 .nav-en:hover > span{opacity:0}
 .nav-en:hover::after{opacity:1}
+
+
+/* ---------- 商品頁氛圍圖 ---------- */
+.mood-img{width:100%;max-height:340px;object-fit:cover;object-position:center 38%;
+  border-radius:22px;display:block;margin:8px 0 4px;box-shadow:var(--sh)}
+@media(max-width:719px){.mood-img{max-height:260px}}

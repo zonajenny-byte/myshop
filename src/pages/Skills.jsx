@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { SKILLS, SKILL_BUNDLE, WAVE_1_IDS, COMING_SOON } from "../data/catalog";
+import { SKILLS, SKILL_BUNDLE, WAVE_1_IDS, FEATURED_IDS, COMING_SOON } from "../data/catalog";
 import ProductCard from "../components/ProductCard";
 import { useCart, money } from "../lib/cart";
 import { notifyMe } from "../lib/api";
@@ -20,12 +20,25 @@ export default function Skills() {
     }
   }
 
+  const featured = FEATURED_IDS.map((id) => SKILLS.find((s) => s.id === id)).filter(Boolean);
   const wave1 = SKILLS.filter((s) => WAVE_1_IDS.includes(s.id));
-  const wave2 = SKILLS.filter((s) => !WAVE_1_IDS.includes(s.id));
+  // 主打的已經在最上面單獨列過，這裡不重複
+  const wave2 = SKILLS.filter((s) => !WAVE_1_IDS.includes(s.id) && !FEATURED_IDS.includes(s.id));
   const single = wave1.length * 850;
 
   return (
     <>
+      {featured.length > 0 && (
+        <section>
+          <span className="pill">Featured</span>
+          <h2>主打三顆</h2>
+          <p className="sub">最多人用的三顆，點進去看完整介紹。</p>
+          <div className="pgrid">
+            {featured.map((p) => <ProductCard key={p.id} p={p} />)}
+          </div>
+        </section>
+      )}
+
       <section>
         <span className="pill">Wave 1 · Available Now</span>
         <h2>七顆生活工具</h2>
@@ -123,7 +136,7 @@ export default function Skills() {
           </div>
           <div className="note warn">
             <h4><span className="num">N06</span>新上幾顆的界線</h4>
-            <p>送禮與人情只給一般行情參考，不是特定習俗的正式規範。個人風格規劃不做身形或外貌評論。人生商學院不是財務顧問、律師或會計師，公司登記、稅務、合約請找專業。爆款短片生成器不保證流量或觸及，平台演算法一直在變。</p>
+            <p>送禮與人情只給一般行情參考，不是特定習俗的正式規範。個人風格規劃不做身形或外貌評論。人生商學院不是財務顧問、律師或會計師。爆款短片生成器不保證流量或觸及。<b>月加薪投資器只做數學試算，報酬率是你自己填的假設值，不推薦標的、不預測市場、不構成投資建議，實際投資有虧損本金的可能。</b></p>
           </div>
           <div className="note">
             <h4><span className="num">N07</span>資料放在哪</h4>

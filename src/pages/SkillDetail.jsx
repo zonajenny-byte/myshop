@@ -29,6 +29,10 @@ export default function SkillDetail() {
     <>
       <Link to="/skills" className="back" style={{ display: "inline-block" }}>‹ 回 AI 工具</Link>
 
+      {skill.moodImage && (
+        <img className="mood-img" src={skill.moodImage} alt="" />
+      )}
+
       <section className="hero" style={{ marginTop: 8 }}>
         <div className="tag">{skill.id} · AI SKILL</div>
         <h1>

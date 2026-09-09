@@ -78,7 +78,8 @@ server/
     safety.js            危機關鍵字偵測（下班的緩衝用）
     toolRunner.js         工具執行註冊表，SKILL_ID_MAP 對照購買記錄
   prompts/
-    labelReader.js  commuteDecompress.js   已接 AI 的兩顆工具的 system prompt
+    labelReader.js  commuteDecompress.js  stylePlanning.js
+    videoScript.js  investPlanner.js       已接 AI 的五顆工具的 system prompt
 ```
 
 ---
@@ -199,12 +200,17 @@ GET  /v1/entitlements     Authorization: Bearer   → { skill_ids: [...], credit
 POST /v1/tool/run         Authorization: Bearer   → 跑一顆工具，扣一次額度
 ```
 
-**目前接了 Anthropic API 的有兩顆：**
+**目前接了 Anthropic API 的有五顆：**
 
 - `label-reader`（食安標示解讀器）——單輪，拍照判讀，prompt 在 `server/prompts/labelReader.js`
 - `commute-decompress`（下班的緩衝）——多輪對話，prompt 在 `server/prompts/commuteDecompress.js`
+- `style-planning`（個人風格規劃）——只用使用者列出的衣物排搭配，prompt 裡明確禁止評論身形外貌
+- `viral-video-script`（自媒體爆款短片生成器）——三種不同心理機制的鉤子，prompt 裡禁止保證流量
+- `invest-planner`（月加薪投資器）——**數字由程式算、AI 只負責解讀**，見下方說明
 
-其他工具（Wave 1 剩下五顆＋Wave 2 新上的三顆）呼叫 `/v1/tool/run` 會回 `501 not_implemented`——不是壞掉，是還沒寫那幾顆的 prompt。要接新的一顆，照 `labelReader.js`（單輪）或 `commuteDecompress.js`（多輪）的形狀寫一支新檔案，在 `server/lib/toolRunner.js` 的 `TOOLS` 註冊一個函式就串起來了。
+**月加薪投資器的特殊設計**：複利是精確數學，算錯會直接誤導財務決定，所以 `server/prompts/investPlanner.js` 的 `compute()` 先用標準年金終值公式把所有數字算好，再把算好的數字餵給 AI，AI 只負責寫「解讀」（通膨說明與觀察）。風險說明是寫死的 `FIXED_NOTES`，不讓 AI 改寫或漏寫——測過即使 AI 回傳「投資穩賺不賠」也蓋不掉那四條警語。
+
+其他工具呼叫 `/v1/tool/run` 會回 `501 not_implemented`——不是壞掉，是還沒寫那幾顆的 prompt。要接新的一顆，照 `labelReader.js`（單輪）或 `commuteDecompress.js`（多輪）的形狀寫一支新檔案，在 `server/lib/toolRunner.js` 的 `TOOLS` 註冊一個函式就串起來了。
 
 **下班的緩衝有安全轉導機制，設計上刻意獨立於 AI 服務。** 使用者的話如果透露自我傷害、輕生這類危機訊號，`server/lib/safety.js` 的關鍵字比對會在呼叫 AI **之前**就攔下來，改回傳安心專線 1925 的轉導訊息——就算 `ANTHROPIC_API_KEY` 沒設定或 Anthropic 服務當下打不通，這層防護照樣有效，不會因為 AI 掛了就漏接危機訊號。第二層防護是 system prompt 裡也交代模型自己留意沒命中關鍵字、但語意上同樣透露危機的說法。兩層攔下來的對話都不會扣使用者的判讀次數。
 

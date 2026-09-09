@@ -14,6 +14,7 @@ export default function Result({ skill, data }) {
     "style-planning": StyleResult,
     "startup-basics": StartupResult,
     "viral-video-script": VideoScriptResult,
+    "invest-planner": InvestResult,
   };
   const C = map[skill.toolKey];
   return C ? <C r={data} /> : null;
@@ -590,6 +591,70 @@ function VideoScriptResult({ r }) {
           {r.notes.map((n, i) => <div className="flag" key={i}><p>{n}</p></div>)}
         </div>
       )}
+    </>
+  );
+}
+
+
+/* ---------- 月加薪投資器 ---------- */
+
+function InvestResult({ r }) {
+  const primary = r.scenarios.find((s) => s.primary) || r.scenarios[1];
+  return (
+    <>
+      <div className="rhead">
+        <h2>每月 {money(r.inputs.monthly)}，投 {r.inputs.years} 年</h2>
+        <p>假設年報酬 {r.inputs.rate}%{r.inputs.goal ? `　·　目標：${r.inputs.goal}` : ""}</p>
+      </div>
+
+      <div className="numgrid">
+        <div className="numcard"><div className="n">{money(r.principal)}</div><div className="u">你投入的本金</div></div>
+        <div className="numcard"><div className="n">{money(primary.value)}</div><div className="u">期末帳面價值</div></div>
+      </div>
+
+      <div className="card">
+        <div className="eyebrow" style={{ marginBottom: 10 }}>三種情境</div>
+        {r.scenarios.map((s) => (
+          <div className="item" key={s.label}>
+            <div className="n" style={{ display: "flex", justifyContent: "space-between" }}>
+              <span>{s.label}（年報酬 {s.rate}%）</span>
+              <span style={{ fontFamily: "var(--sans)", fontWeight: 700 }}>{money(s.value)}</span>
+            </div>
+            <div className="y">報酬部分 {money(s.gain)}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="fbox yel">
+        <div className="fhead">💡 通膨調整後</div>
+        <p style={{ fontSize: 15, fontWeight: 500, marginBottom: 8 }}>
+          約等於現在的 {money(r.inflation.realValue)}
+        </p>
+        <p style={{ fontSize: 13, color: "var(--ink2)" }}>{r.inflation.note}</p>
+      </div>
+
+      <div className="card">
+        <div className="eyebrow" style={{ marginBottom: 10 }}>過程中的幾個點</div>
+        {r.milestones.map((m) => (
+          <div className="item" key={m.year}>
+            <div className="n" style={{ display: "flex", justifyContent: "space-between" }}>
+              <span>第 {m.year} 年</span>
+              <span style={{ fontFamily: "var(--sans)", fontWeight: 700 }}>{money(m.value)}</span>
+            </div>
+            <div className="y">其中本金 {money(m.principal)}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="fbox grn">
+        <div className="fhead">✓ 值得注意的</div>
+        {r.observations.map((o, i) => <div className="flag" key={i}><p>{o}</p></div>)}
+      </div>
+
+      <div className="fbox red">
+        <div className="fhead">⚠️ 這份試算的限制</div>
+        {r.notes.map((n, i) => <div className="flag" key={i}><p>{n}</p></div>)}
+      </div>
     </>
   );
 }

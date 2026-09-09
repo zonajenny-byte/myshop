@@ -1,6 +1,7 @@
 /**
- * 七顆工具的執行入口。目前接了 Anthropic API 的有食安標示解讀器跟
- * 下班的緩衝，其餘五顆還沒寫 prompt——TOOLS 裡沒有對應項目的話，
+ * 工具的執行入口。已接 Anthropic API：食安標示解讀器、下班的緩衝、
+ * 個人風格規劃、自媒體爆款短片生成器、月加薪投資器。
+ * 其餘還沒寫 prompt——TOOLS 裡沒有對應項目的話，
  * /v1/tool/run 會回 501 not_implemented，不是壞掉，是還沒做到那顆。
  *
  * 每個工具函式回傳 { result, chargeCredit }：
@@ -17,6 +18,9 @@ import { callClaude, extractJson, isConfigured } from "./anthropic.js";
 import { detectCrisis, crisisResponse } from "./safety.js";
 import * as labelReader from "../prompts/labelReader.js";
 import * as commuteDecompress from "../prompts/commuteDecompress.js";
+import * as stylePlanning from "../prompts/stylePlanning.js";
+import * as videoScript from "../prompts/videoScript.js";
+import * as investPlanner from "../prompts/investPlanner.js";
 
 export { isConfigured };
 
@@ -61,9 +65,65 @@ async function runCommuteDecompress({ fields, history }) {
   return { result, chargeCredit };
 }
 
+async function runStylePlanning({ fields }) {
+  if (!fields?.wardrobe?.trim()) throw new Error("先告訴我你衣櫃裡有什麼。");
+  const text = await callClaude({
+    system: stylePlanning.SYSTEM_PROMPT,
+    messages: [{ role: "user", content: stylePlanning.buildUserContent({ fields }) }],
+    maxTokens: 2000,
+  });
+  return { result: extractJson(text), chargeCredit: true };
+}
+
+async function runVideoScript({ fields }) {
+  if (!fields?.topic?.trim()) throw new Error("先告訴我這支想拍什麼。");
+  const text = await callClaude({
+    system: videoScript.SYSTEM_PROMPT,
+    messages: [{ role: "user", content: videoScript.buildUserContent({ fields }) }],
+    maxTokens: 2200,
+  });
+  return { result: extractJson(text), chargeCredit: true };
+}
+
+async function runInvestPlanner({ fields }) {
+  const monthly = Number(fields?.monthly);
+  const years = Number(fields?.years);
+  const rate = Number(fields?.rate);
+  if (!(monthly > 0)) throw new Error("每月投入金額要大於 0。");
+  if (!(years > 0)) throw new Error("投資年數要大於 0。");
+  if (!(rate >= 0)) throw new Error("報酬率不能是負數。");
+  if (years > 60) throw new Error("年數請填 60 以內。");
+
+  // 數字由程式算，AI 只負責解讀——複利算錯會直接誤導財務決定，不能交給模型
+  const computed = investPlanner.compute({ monthly, years, rate });
+
+  const text = await callClaude({
+    system: investPlanner.SYSTEM_PROMPT,
+    messages: [{ role: "user", content: investPlanner.buildUserContent({ computed, fields }) }],
+    maxTokens: 1200,
+  });
+  const interpreted = extractJson(text);
+
+  // 把 AI 的解讀併回算好的數字。_facts 是給 AI 用的素材，不回傳前端。
+  const { _facts, ...rest } = computed;
+  return {
+    result: {
+      ...rest,
+      inflation: { ...rest.inflation, note: interpreted.inflationNote || "" },
+      observations: Array.isArray(interpreted.observations) ? interpreted.observations : [],
+      // 風險說明固定寫死，不讓 AI 改寫或漏寫
+      notes: investPlanner.FIXED_NOTES,
+    },
+    chargeCredit: true,
+  };
+}
+
 export const TOOLS = {
   "label-reader": runLabelReader,
   "commute-decompress": runCommuteDecompress,
+  "style-planning": runStylePlanning,
+  "viral-video-script": runVideoScript,
+  "invest-planner": runInvestPlanner,
   // "skincare-reader": ...,  尚未實作
   // "hard-talk": ...,
   // "big-decision": ...,
@@ -84,4 +144,5 @@ export const SKILL_ID_MAP = {
   "style-planning": "AP-SL-20",
   "startup-basics": "AP-SL-21",
   "viral-video-script": "AP-SL-22",
+  "invest-planner": "AP-SL-23",
 };

@@ -51,6 +51,12 @@ const FORMS = {
       { k: "platform", l: "要發在哪個平台", ph: "Reels、Shorts、TikTok⋯⋯" },
       { k: "length", l: "大概想拍多長", ph: "15 秒、30 秒、1 分鐘⋯⋯" },
     ], run: "幫我寫腳本", loading: "正在寫腳本⋯⋯" },
+  "invest-planner": { fields: [
+      { k: "monthly", l: "每月投入金額", ph: "10000", num: true },
+      { k: "years", l: "打算投多久（年）", ph: "10", num: true },
+      { k: "rate", l: "假設年報酬率（%）", ph: "6", num: true },
+      { k: "goal", l: "想達成什麼（選填）", ph: "頭期款、退休金、孩子的教育費⋯⋯" },
+    ], run: "幫我試算", loading: "正在試算⋯⋯" },
 };
 
 export default function ToolRunner({ skill, onBack, onCredits }) {
