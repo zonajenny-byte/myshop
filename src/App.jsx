@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, NavLink, Route, Routes, useLocation } from "react-router-dom";
 import { CartProvider, useCart } from "./lib/cart";
-import { fetchPhysical } from "./lib/products";
+import { fetchPhysical, primeSkills } from "./lib/products";
 import CartDrawer from "./components/CartDrawer";
 import AnnouncementModal from "./components/AnnouncementModal";
 import Home from "./pages/Home";
@@ -118,7 +118,7 @@ export default function App() {
 
   // 一開始就把能量小物清單拉進來，購物袋才能正確解析商品 ID，
   // 不用等到 Home 或 Shop 頁面先渲染過一次。
-  useEffect(() => { fetchPhysical(); }, []);
+  useEffect(() => { fetchPhysical(); primeSkills(); }, []);
 
   return (
     <CartProvider>

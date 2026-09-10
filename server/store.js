@@ -164,6 +164,8 @@ export function create(input) {
     // 這支 store 只管實體商品，kind 固定 physical。
     // 前端購物袋靠 kind 分類（算運費、判斷要不要收地址），少了它會被當成不明品項而漏算。
     kind: "physical",
+    // 手動售完開關，跟庫存數字分開——庫存還有也能先標成售完（例如想下架但不刪商品）
+    soldOut: !!input.soldOut,
     image,
     image2,
   };
@@ -212,6 +214,7 @@ export function update(id, input) {
     ...input,
     price: Number(input.price ?? products[idx].price),
     stock: Number(input.stock ?? products[idx].stock),
+    soldOut: input.soldOut !== undefined ? !!input.soldOut : products[idx].soldOut,
     image,
     image2,
   };

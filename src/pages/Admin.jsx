@@ -4,12 +4,13 @@ import { usePhysicalProducts, adminCreate, adminUpdate, adminRemove, resetDemoDa
 import { adminGenerate, adminList, adminRevoke } from "../lib/discountCodes";
 import { fetchAnnouncement, adminUpdateAnnouncement } from "../lib/announcement";
 import { adminListArticles, adminGetArticle, adminCreateArticle, adminUpdateArticle, adminRemoveArticle } from "../lib/articles";
+import { useSkills, adminUpdateSkill, adminResetSkill } from "../lib/skillOverrides";
 import { DEMO, imageToBase64 } from "../lib/api";
 import { money } from "../lib/cart";
 import { CATEGORIES, DEFAULT_CATEGORY } from "../data/catalog";
 
 const EMPTY = { id: "", name: "", en: "", price: "", stock: "", blurb: "", emoji: "✦", tint: "#F3EDF9",
-  image: null, image2: null, category: DEFAULT_CATEGORY, spec: [["", ""], ["", ""], ["", ""]] };
+  image: null, image2: null, category: DEFAULT_CATEGORY, soldOut: false, spec: [["", ""], ["", ""], ["", ""]] };
 
 export default function Admin() {
   const [signedIn, setSignedIn] = useState(isAdminSignedIn());
@@ -120,6 +121,52 @@ export default function Admin() {
     setArtBusy(false);
   }
 
+  const skills = useSkills();
+  const [skillEditing, setSkillEditing] = useState(null);
+  const [skillForm, setSkillForm] = useState(null);
+  const [skillBusy, setSkillBusy] = useState(false);
+  const [skillMsg, setSkillMsg] = useState(null);
+
+  function startEditSkill(sk) {
+    setSkillForm({
+      name: sk.name, en: sk.en || "", price: sk.price,
+      blurb: sk.blurb || "", feat: [...(sk.feat || []), "", "", ""].slice(0, 3),
+      limit: sk.limit || "", emoji: sk.emoji || "✦", tint: sk.tint || "#F3EDF9",
+      moodImage: sk.moodImage || null,
+    });
+    setSkillEditing(sk.id);
+    setSkillMsg(null);
+  }
+
+  async function onSkillMood(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const b64 = await imageToBase64(file, 1400);
+      setSkillForm((f) => ({ ...f, moodImage: "data:image/jpeg;base64," + b64 }));
+    } catch { setSkillMsg({ t: "err", m: "這張圖片讀不了，換一張試試。" }); }
+  }
+
+  async function saveSkill() {
+    setSkillBusy(true);
+    setSkillMsg(null);
+    try {
+      await adminUpdateSkill(skillEditing, skillForm);
+      setSkillEditing(null);
+    } catch (e) { setSkillMsg({ t: "err", m: e.message }); }
+    setSkillBusy(false);
+  }
+
+  async function resetSkill(id) {
+    if (!confirm("確定要還原成原本的內容嗎？你改過的文字跟圖片會被清掉。")) return;
+    setSkillBusy(true);
+    try {
+      await adminResetSkill(id);
+      setSkillEditing(null);
+    } catch (e) { setSkillMsg({ t: "err", m: e.message }); }
+    setSkillBusy(false);
+  }
+
   async function delArticle(id) {
     if (!confirm("確定要刪除這篇文章嗎？")) return;
     setArtBusy(true);
@@ -154,6 +201,7 @@ export default function Admin() {
       image: p.image || null,
       image2: p.image2 || null,
       category: p.category || DEFAULT_CATEGORY,
+      soldOut: !!p.soldOut,
       spec: [...(p.spec || []), ["", ""], ["", ""], ["", ""]].slice(0, 3),
     });
     setEditing(p.id);
@@ -304,6 +352,12 @@ export default function Admin() {
             {CATEGORIES.map((c) => <option key={c.key} value={c.key}>{c.name}</option>)}
           </select>
 
+          <label style={{ display: "flex", alignItems: "center", gap: 10, margin: "4px 0 14px" }}>
+            <input type="checkbox" checked={!!form.soldOut}
+              onChange={(e) => setForm({ ...form, soldOut: e.target.checked })} />
+            <span style={{ fontSize: 14 }}>手動標成售完（不管庫存多少，客人都無法加入購物袋）</span>
+          </label>
+
           <div className="flabel">名稱</div>
           <input className="field" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
             placeholder="月相手鍊" />
@@ -359,7 +413,7 @@ export default function Admin() {
         <button className="btn" onClick={startNew} style={{ marginBottom: 20 }}>+ 新增商品</button>
       )}
 
-      {!editing && !artEditing && (
+      {!editing && !artEditing && !skillEditing && (
         <div className="grid">
           {products.map((p) => (
             <div className="card" key={p.id}>
@@ -381,6 +435,11 @@ export default function Admin() {
                   {(CATEGORIES.find((c) => c.key === (p.category || DEFAULT_CATEGORY)) || CATEGORIES[0]).name}
                 </span>
                 <span style={{ fontSize: 12, color: "var(--ink2)" }}>庫存 {p.stock}</span>
+                {p.soldOut && (
+                  <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 8, background: "var(--ink)", color: "#fff" }}>
+                    手動售完
+                  </span>
+                )}
                 <button className="add soft" onClick={() => startEdit(p)} style={{ marginLeft: "auto" }}>編輯</button>
                 <button className="add danger" onClick={() => del(p.id)}>下架</button>
               </div>
@@ -441,7 +500,7 @@ export default function Admin() {
         </div>
       )}
 
-      {!editing && !artEditing && (
+      {!editing && !artEditing && !skillEditing && (
         <div style={{ marginTop: 36 }}>
           <h2 style={{ fontSize: 22, marginBottom: 4 }}>文章</h2>
           <p className="sub">草稿只有你看得到，發布後才會出現在網站的文章頁。</p>
@@ -479,7 +538,97 @@ export default function Admin() {
         </div>
       )}
 
-      {!editing && !artEditing && ann && (
+      {!editing && !artEditing && skillEditing && (
+        <div style={{ marginTop: 36 }}>
+          <h2 style={{ fontSize: 22, marginBottom: 4 }}>編輯 AI 工具</h2>
+          <p className="sub">改的是展示內容，工具本身的判讀邏輯不受影響。</p>
+          <div className="card">
+            <div className="flabel">名稱</div>
+            <input className="field" value={skillForm.name}
+              onChange={(e) => setSkillForm({ ...skillForm, name: e.target.value })} />
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              <div>
+                <div className="flabel">英文名</div>
+                <input className="field" value={skillForm.en}
+                  onChange={(e) => setSkillForm({ ...skillForm, en: e.target.value })} />
+              </div>
+              <div>
+                <div className="flabel">價格</div>
+                <input className="field" type="number" value={skillForm.price}
+                  onChange={(e) => setSkillForm({ ...skillForm, price: e.target.value })} />
+              </div>
+            </div>
+
+            <div className="flabel">一句話介紹</div>
+            <textarea className="field" value={skillForm.blurb}
+              onChange={(e) => setSkillForm({ ...skillForm, blurb: e.target.value })} />
+
+            <div className="flabel">功能重點（最多三點，留空的不會顯示）</div>
+            {skillForm.feat.map((f, i) => (
+              <input key={i} className="field" value={f} placeholder={`第 ${i + 1} 點`}
+                onChange={(e) => {
+                  const feat = [...skillForm.feat];
+                  feat[i] = e.target.value;
+                  setSkillForm({ ...skillForm, feat });
+                }} />
+            ))}
+
+            <div className="flabel">使用限制（安全界線，建議保留）</div>
+            <textarea className="field" value={skillForm.limit}
+              onChange={(e) => setSkillForm({ ...skillForm, limit: e.target.value })} />
+
+            <div className="flabel">氛圍圖（選填，顯示在商品頁最上面）</div>
+            {skillForm.moodImage ? (
+              <div style={{ position: "relative", marginBottom: 12 }}>
+                <img src={resolveImageUrl(skillForm.moodImage)} alt="氛圍圖預覽"
+                  style={{ width: "100%", aspectRatio: "16/9", objectFit: "cover", borderRadius: 14 }} />
+                <button className="add danger" onClick={() => setSkillForm({ ...skillForm, moodImage: null })}
+                  style={{ position: "absolute", top: 10, right: 10, padding: "6px 14px", fontSize: 12 }}>
+                  移除
+                </button>
+              </div>
+            ) : (
+              <label className="drop" style={{ marginBottom: 12, padding: "20px" }}>
+                <div className="ic">🖼</div>
+                <div className="t">點這裡選氛圍圖</div>
+                <input type="file" accept="image/*" onChange={onSkillMood} style={{ display: "none" }} />
+              </label>
+            )}
+
+            <button className="btn" onClick={saveSkill} disabled={skillBusy}>
+              {skillBusy ? "儲存中⋯⋯" : "儲存"}
+            </button>
+            <button className="btn soft" onClick={() => setSkillEditing(null)}>取消</button>
+            <button className="btn soft" onClick={() => resetSkill(skillEditing)} disabled={skillBusy}>
+              還原成原本的內容
+            </button>
+            {skillMsg && <p className={"msg " + skillMsg.t}>{skillMsg.m}</p>}
+          </div>
+        </div>
+      )}
+
+      {!editing && !artEditing && !skillEditing && (
+        <div style={{ marginTop: 36 }}>
+          <h2 style={{ fontSize: 22, marginBottom: 4 }}>AI 工具</h2>
+          <p className="sub">可以改名稱、介紹、價格、氛圍圖。工具本身的判讀邏輯寫在程式裡，不會被這裡改到。</p>
+          <div className="card">
+            {skills.map((sk) => (
+              <div className="item" key={sk.id}>
+                <div className="n" style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <span>{sk.emoji} {sk.name}</span>
+                  <span style={{ fontFamily: "var(--sans)", fontWeight: 700 }}>{money(sk.price)}</span>
+                  <button className="add soft" style={{ marginLeft: "auto", padding: "5px 14px", fontSize: 12 }}
+                    onClick={() => startEditSkill(sk)}>編輯</button>
+                </div>
+                <div className="y">{sk.blurb}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {!editing && !artEditing && !skillEditing && ann && (
         <div style={{ marginTop: 36 }}>
           <h2 style={{ fontSize: 22, marginBottom: 4 }}>首頁公告彈窗</h2>
           <p className="sub">訪客第一次進首頁時會跳出來，關掉之後同一次瀏覽不會再跳。</p>
@@ -526,7 +675,7 @@ export default function Admin() {
         </div>
       )}
 
-      {!editing && !artEditing && (
+      {!editing && !artEditing && !skillEditing && (
         <div style={{ marginTop: 36 }}>
           <h2 style={{ fontSize: 22, marginBottom: 4 }}>折扣碼產生器</h2>
           <p className="sub">每組碼打七折，只限數位工具（不含實體商品與訂閱），用過一次就失效。</p>

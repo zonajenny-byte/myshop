@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { PHYSICAL as SEED_PHYSICAL, SKILLS } from "../data/catalog";
+import { PHYSICAL as SEED_PHYSICAL } from "../data/catalog";
+import { mergeSkills, fetchOverrides } from "./skillOverrides";
 import { API_BASE, DEMO } from "./api";
 import { adminToken } from "./adminApi";
 
@@ -78,11 +79,24 @@ export function usePhysicalProducts() {
 export const SUB_SUFFIX = ":sub";
 export const subCartId = (skillId) => `${skillId}${SUB_SUFFIX}`;
 
-/** 商品查找，涵蓋能量小物（動態）與七顆工具（靜態）。購物袋要用這個，不要用 catalog.js 的舊版。 */
+/**
+ * 拿「套用過後台覆寫」的工具清單。
+ * 購物袋算錢一定要用這個，直接用 catalog.js 的靜態清單會拿到舊價格，
+ * 後台改了價卻還是照原價收，這種錯很難被發現。
+ */
+let skillCache = null;
+export function currentSkills() {
+  return skillCache || mergeSkills({});
+}
+export function primeSkills() {
+  return fetchOverrides().then((ov) => { skillCache = mergeSkills(ov); return skillCache; });
+}
+
+/** 商品查找，涵蓋能量小物（動態）與 AI 工具。購物袋要用這個，不要用 catalog.js 的舊版。 */
 export function byId(id) {
   if (typeof id === "string" && id.endsWith(SUB_SUFFIX)) {
     const baseId = id.slice(0, -SUB_SUFFIX.length);
-    const base = SKILLS.find((s) => s.id === baseId);
+    const base = currentSkills().find((s) => s.id === baseId);
     if (!base?.subscription) return null;
     return {
       ...base,
@@ -95,7 +109,7 @@ export function byId(id) {
     };
   }
   const physical = cache || SEED_PHYSICAL;
-  return [...physical, ...SKILLS].find((p) => p.id === id);
+  return [...physical, ...currentSkills()].find((p) => p.id === id);
 }
 
 /**
@@ -125,6 +139,7 @@ export async function adminCreate(input) {
       spec: (input.spec || []).filter((r) => r[0] && r[1]),
       emoji: input.emoji?.trim() || "✦", tint: input.tint?.trim() || "#F3EDF9",
       category: input.category || "crystal",
+      soldOut: !!input.soldOut,
       image2: input.image2 || null,
     };
     cache = [...list, item];

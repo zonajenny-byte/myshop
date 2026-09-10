@@ -23,6 +23,7 @@ import * as subscriptions from "./subscriptions.js";
 import * as discountCodes from "./discountCodes.js";
 import * as announcement from "./announcement.js";
 import * as articles from "./articles.js";
+import * as skillOverrides from "./skillOverrides.js";
 import * as ecpay from "./lib/ecpay.js";
 import * as line from "./lib/line.js";
 import * as email from "./lib/email.js";
@@ -113,6 +114,25 @@ app.delete("/api/admin/products/:id", requireAdmin, (req, res) => {
 
 app.get("/health", (req, res) => {
   res.json({ ok: true, service: "myshop-server", port: process.env.PORT || 3000, time: new Date().toISOString() });
+});
+
+/* ---------- AI 工具的後台編輯（只覆寫展示層，不動判讀邏輯）---------- */
+
+// 公開：前端拿去疊在 catalog.js 的預設值上
+app.get("/api/skill-overrides", (req, res) => {
+  res.json(skillOverrides.getAll());
+});
+
+app.put("/api/admin/skill-overrides/:id", requireAdmin, (req, res) => {
+  const { item, error } = skillOverrides.update(req.params.id, req.body || {});
+  if (error) return res.status(400).json({ error: "invalid", message: error });
+  res.json(item);
+});
+
+app.delete("/api/admin/skill-overrides/:id", requireAdmin, (req, res) => {
+  const { ok, error } = skillOverrides.reset(req.params.id);
+  if (error) return res.status(404).json({ error: "not_found", message: error });
+  res.json({ ok });
 });
 
 /* ---------- 文章 ---------- */

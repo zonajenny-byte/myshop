@@ -1,5 +1,5 @@
 import { Link, useParams } from "react-router-dom";
-import { SKILLS } from "../data/catalog";
+import { useSkills } from "../lib/skillOverrides";
 import { useCart, money } from "../lib/cart";
 
 /**
@@ -9,6 +9,7 @@ import { useCart, money } from "../lib/cart";
  */
 export default function SkillDetail() {
   const { toolKey } = useParams();
+  const SKILLS = useSkills();
   const skill = SKILLS.find((s) => s.toolKey === toolKey);
   const { has, toggle, hasSubscription, toggleSubscription } = useCart();
 

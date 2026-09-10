@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { SKILLS, SKILL_BUNDLE, WAVE_1_IDS, FEATURED_IDS, COMING_SOON } from "../data/catalog";
+import { SKILL_BUNDLE, WAVE_1_IDS, FEATURED_IDS, COMING_SOON } from "../data/catalog";
+import { useSkills } from "../lib/skillOverrides";
 import ProductCard from "../components/ProductCard";
 import { useCart, money } from "../lib/cart";
 import { notifyMe } from "../lib/api";
@@ -20,6 +21,7 @@ export default function Skills() {
     }
   }
 
+  const SKILLS = useSkills();
   const featured = FEATURED_IDS.map((id) => SKILLS.find((s) => s.id === id)).filter(Boolean);
   const wave1 = SKILLS.filter((s) => WAVE_1_IDS.includes(s.id));
   // 主打的已經在最上面單獨列過，這裡不重複

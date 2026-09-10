@@ -137,6 +137,12 @@ nav a.on{background:var(--blush);color:var(--rose-d)}
 .hero{background:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20800%20340%22%20width%3D%22800%22%20height%3D%22340%22%3E%20%3Cdefs%3E%20%3ClinearGradient%20id%3D%22wash%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%20%3Cstop%20offset%3D%220%22%20stop-color%3D%22%23FFC2D4%22%2F%3E%20%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23B9E8D0%22%2F%3E%20%3C%2FlinearGradient%3E%20%3C%2Fdefs%3E%20%3Cg%20fill%3D%22none%22%20stroke%3D%22%233D3444%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20opacity%3D%220.32%22%3E%20%3Cg%20stroke-width%3D%221.5%22%3E%20%3Ccircle%20cx%3D%2278%22%20cy%3D%2262%22%20r%3D%2216%22%2F%3E%20%3Cpath%20d%3D%22M122%2046%20A16%2016%200%201%201%20122%2078%20A12%2016%200%201%200%20122%2046%20Z%22%2F%3E%20%3Ccircle%20cx%3D%22166%22%20cy%3D%2262%22%20r%3D%2216%22%20stroke-dasharray%3D%222.5%204.5%22%2F%3E%20%3C%2Fg%3E%20%3Cg%20stroke-width%3D%221.5%22%3E%20%3Cpath%20d%3D%22M74%20268%20L88%20206%20L112%20200%20L128%20262%20L100%20286%20Z%22%2F%3E%20%3Cpath%20d%3D%22M88%20206%20L100%20286%20M112%20200%20L100%20286%20M74%20268%20L100%20286%22%2F%3E%20%3Cpath%20d%3D%22M134%20276%20L146%20232%20L164%20236%20L170%20280%20L152%20292%20Z%22%2F%3E%20%3Cpath%20d%3D%22M146%20232%20L152%20292%20M164%20236%20L152%20292%22%2F%3E%20%3C%2Fg%3E%20%3Cg%20stroke-width%3D%221.5%22%3E%20%3Cpath%20d%3D%22M400%20292%20C400%20240%20412%20200%20436%20168%22%2F%3E%20%3Cpath%20d%3D%22M404%20268%20C382%20260%20368%20240%20366%20214%20C390%20218%20404%20234%20406%20260%22%2F%3E%20%3Cpath%20d%3D%22M410%20234%20C432%20226%20446%20206%20448%20180%20C424%20184%20410%20200%20408%20226%22%2F%3E%20%3Cpath%20d%3D%22M418%20202%20C400%20190%20390%20170%20390%20148%20C412%20154%20422%20170%20422%20194%22%2F%3E%20%3Cpath%20d%3D%22M424%20176%20C444%20168%20456%20150%20456%20130%20C436%20136%20426%20152%20426%20172%22%2F%3E%20%3C%2Fg%3E%20%3Cg%20stroke-width%3D%221.5%22%3E%20%3Cpath%20d%3D%22M636%20118%20L654%2052%20L680%2046%20L698%20112%20L668%20138%20Z%22%2F%3E%20%3Cpath%20d%3D%22M654%2052%20L668%20138%20M680%2046%20L668%20138%20M636%20118%20L668%20138%22%2F%3E%20%3Cpath%20d%3D%22M704%20128%20L718%2080%20L738%2084%20L744%20130%20L724%20142%20Z%22%2F%3E%20%3Cpath%20d%3D%22M718%2080%20L724%20142%20M738%2084%20L724%20142%22%2F%3E%20%3Cpath%20d%3D%22M600%20146%20L610%20112%20L626%20116%20L630%20150%20L614%20160%20Z%22%2F%3E%20%3Cpath%20d%3D%22M610%20112%20L614%20160%20M626%20116%20L614%20160%22%2F%3E%20%3C%2Fg%3E%20%3Cg%20stroke-width%3D%221.4%22%3E%20%3Cpath%20d%3D%22M676%20288%20C676%20260%20684%20238%20700%20220%22%2F%3E%20%3Cpath%20d%3D%22M679%20272%20C664%20266%20654%20252%20653%20234%20C670%20237%20679%20248%20681%20266%22%2F%3E%20%3Cpath%20d%3D%22M684%20246%20C699%20240%20709%20226%20710%20208%20C694%20211%20684%20222%20682%20240%22%2F%3E%20%3C%2Fg%3E%20%3Cg%20stroke-width%3D%221.4%22%3E%20%3Cpath%20d%3D%22M0%20308%20C70%20294%20130%20322%20200%20308%20C270%20294%20330%20322%20400%20308%20C470%20294%20530%20322%20600%20308%20C670%20294%20730%20322%20800%20308%22%20opacity%3D%220.75%22%2F%3E%20%3Cpath%20d%3D%22M0%20326%20C70%20314%20130%20338%20200%20326%20C270%20314%20330%20338%20400%20326%20C470%20314%20530%20338%20600%20326%20C670%20314%20730%20338%20800%20326%22%20opacity%3D%220.5%22%2F%3E%20%3C%2Fg%3E%20%3C%2Fg%3E%20%3Cg%20fill%3D%22none%22%20stroke%3D%22%233D3444%22%20stroke-width%3D%221.4%22%20stroke-linecap%3D%22round%22%20opacity%3D%220.28%22%3E%20%3Cpath%20d%3D%22M262%2092%20L262%20110%20M253%20101%20L271%20101%22%2F%3E%20%3Cpath%20d%3D%22M528%2076%20L528%2092%20M520%2084%20L536%2084%22%2F%3E%20%3Cpath%20d%3D%22M336%20148%20L336%20162%20M329%20155%20L343%20155%22%2F%3E%20%3Cpath%20d%3D%22M566%20196%20L566%20210%20M559%20203%20L573%20203%22%2F%3E%20%3Cpath%20d%3D%22M228%20210%20L228%20224%20M221%20217%20L235%20217%22%2F%3E%20%3Cpath%20d%3D%22M492%20260%20L492%20272%20M486%20266%20L498%20266%22%2F%3E%20%3C%2Fg%3E%20%3Cg%20fill%3D%22%233D3444%22%20opacity%3D%220.2%22%3E%20%3Ccircle%20cx%3D%22318%22%20cy%3D%2260%22%20r%3D%222.4%22%2F%3E%20%3Ccircle%20cx%3D%22466%22%20cy%3D%22106%22%20r%3D%222%22%2F%3E%20%3Ccircle%20cx%3D%22208%22%20cy%3D%22150%22%20r%3D%222.2%22%2F%3E%20%3Ccircle%20cx%3D%22592%22%20cy%3D%22248%22%20r%3D%222%22%2F%3E%20%3Ccircle%20cx%3D%22352%22%20cy%3D%22222%22%20r%3D%222.4%22%2F%3E%20%3Ccircle%20cx%3D%22290%22%20cy%3D%22272%22%20r%3D%222%22%2F%3E%20%3Ccircle%20cx%3D%22620%22%20cy%3D%22196%22%20r%3D%222.2%22%2F%3E%20%3Ccircle%20cx%3D%22150%22%20cy%3D%22170%22%20r%3D%222%22%2F%3E%20%3C%2Fg%3E%20%3C%2Fsvg%3E") center/cover no-repeat, var(--hero);
   border-radius:28px;padding:clamp(26px,5vw,44px);margin:20px 0 26px;
   box-shadow:var(--sh-lg);position:relative;overflow:hidden}
+
+/* 首頁專用：滿版寬度、尖角、上下間距縮小——只有首頁的橫幅要這樣，
+   其他頁面（後台、工具詳細頁、工具台）共用同一顆 .hero，維持原本的圓角容器樣式 */
+.hero-full{border-radius:0;box-shadow:none;margin:8px 0 14px;
+  width:100vw;margin-left:calc(-50vw + 50%);margin-right:calc(-50vw + 50%);
+  padding-left:max(24px,calc(50vw - 480px + 24px));padding-right:max(24px,calc(50vw - 480px + 24px))}
 /* 文字區塊墊高一層，確保壓在插畫之上 */
 .hero > *{position:relative;z-index:1}
 .hero .tag{font-family:var(--mono);font-size:12px;letter-spacing:2px;opacity:.7}
@@ -494,3 +500,32 @@ footer .fbrand{font-size:14px;color:var(--ink);font-style:italic;
 .mood-img{width:100%;max-height:340px;object-fit:cover;object-position:center 38%;
   border-radius:22px;display:block;margin:8px 0 4px;box-shadow:var(--sh)}
 @media(max-width:719px){.mood-img{max-height:260px}}
+
+
+/* ---------- 售完覆蓋層 ---------- */
+.pcard-soldout{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,.2)}
+.pcard-soldout span{border:1.5px solid #fff;color:#fff;padding:7px 22px;
+  font-size:13px;letter-spacing:.3em;font-family:var(--sans)}
+
+/* ---------- 首頁分類橫向列（一列最多5件，超過用滑動看）---------- */
+.hrow{display:flex;gap:14px;overflow-x:auto;padding-bottom:8px;
+  scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}
+.hrow::-webkit-scrollbar{height:5px}
+.hrow::-webkit-scrollbar-thumb{background:var(--rule);border-radius:3px}
+.hrow > *{flex:0 0 148px;scroll-snap-align:start}
+@media(min-width:600px){.hrow > *{flex-basis:172px}}
+
+/* ---------- 首頁的組合商品卡（雙價格：原價劃線＋優惠價）---------- */
+.bundle-card{flex:0 0 148px;scroll-snap-align:start;display:block;text-decoration:none;
+  color:inherit;border-radius:14px;padding:14px 12px;background:var(--go);
+  display:flex;flex-direction:column;justify-content:flex-end;aspect-ratio:3/4}
+@media(min-width:600px){.bundle-card{flex-basis:172px}}
+.bundle-card:hover{text-decoration:none}
+.bundle-card .bc-tag{font-family:var(--mono);font-size:10px;letter-spacing:.15em;
+  color:var(--go-ink);opacity:.75;margin-bottom:auto}
+.bundle-card .bc-name{font-family:var(--tc);font-size:15px;line-height:1.4;
+  color:var(--go-ink);margin-bottom:8px}
+.bundle-card .bc-strike{font-size:12px;color:var(--go-ink);opacity:.6;
+  text-decoration:line-through;letter-spacing:.02em}
+.bundle-card .bc-price{font-family:var(--sans);font-size:19px;font-weight:700;color:var(--go-ink)}

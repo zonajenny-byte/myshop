@@ -13,7 +13,8 @@ import { resolveImageUrl } from "../lib/products";
 export default function ProductCard({ p }) {
   const { has, toggle } = useCart();
   const inCart = has(p.id);
-  const soldOut = p.kind === "physical" && p.stock === 0;
+  // 手動標售完（後台開關）或庫存 0（自動判斷），兩種情況都算售完
+  const soldOut = p.kind === "physical" && (p.soldOut === true || p.stock === 0);
   const photo = resolveImageUrl(p.image);
   const photo2 = resolveImageUrl(p.image2);
   const href = p.kind === "physical" ? `/product/${p.id}` : `/skill/${p.toolKey}`;
@@ -36,6 +37,11 @@ export default function ProductCard({ p }) {
           </>
         ) : (
           <span className="pcard-emoji">{p.emoji}</span>
+        )}
+        {soldOut && (
+          <div className="pcard-soldout">
+            <span>售完</span>
+          </div>
         )}
       </div>
 
