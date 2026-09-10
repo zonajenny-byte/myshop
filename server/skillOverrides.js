@@ -18,7 +18,9 @@ const FILE = dataFile("skillOverrides.json");
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
 /** 只有這些欄位能從後台改。toolKey、kind、id 刻意不在裡面。 */
-const EDITABLE = ["name", "en", "price", "blurb", "feat", "limit", "emoji", "tint", "moodImage"];
+const EDITABLE = ["name", "en", "price", "blurb", "feat", "limit", "emoji", "tint", "image", "image2", "moodImage"];
+/** 三種圖片各自的用途：image 是卡片主圖、image2 是滑鼠移上去的第二張、moodImage 是商品頁的氛圍橫幅 */
+const IMAGE_FIELDS = ["image", "image2", "moodImage"];
 
 function load() {
   if (!fs.existsSync(FILE)) return {};
@@ -31,7 +33,7 @@ function save(map) {
 
 let overrides = load();
 
-function saveImageIfNeeded(image, skillId) {
+function saveImageIfNeeded(image, skillId, suffix = "") {
   if (!image) return null;
   if (!image.startsWith("data:image/")) return image; // 已經是路徑，沒換圖
 
@@ -43,7 +45,7 @@ function saveImageIfNeeded(image, skillId) {
   if (buffer.length > MAX_IMAGE_BYTES) throw new Error("圖片太大了，請壓縮到 5MB 以內");
 
   const ext = extRaw === "jpeg" ? "jpg" : extRaw === "svg+xml" ? "svg" : extRaw;
-  const filename = `skill-${skillId}-${Date.now()}.${ext}`;
+  const filename = `skill-${skillId}${suffix}-${Date.now()}.${ext}`;
   fs.writeFileSync(path.join(UPLOADS_DIR, filename), buffer);
   return `/uploads/${filename}`;
 }
@@ -84,12 +86,14 @@ export function update(skillId, input) {
         : [];
       continue;
     }
-    if (key === "moodImage") {
+    if (IMAGE_FIELDS.includes(key)) {
       try {
-        const saved = saveImageIfNeeded(input.moodImage, skillId);
-        const prev = overrides[skillId]?.moodImage;
+        // 三張圖各自用不同後綴，避免同一次儲存裡檔名撞在一起
+        const suffix = key === "image2" ? "-b" : key === "moodImage" ? "-mood" : "";
+        const saved = saveImageIfNeeded(input[key], skillId, suffix);
+        const prev = overrides[skillId]?.[key];
         if (saved !== prev && prev) deleteImageFile(prev);
-        patch.moodImage = saved;
+        patch[key] = saved;
       } catch (e) {
         return { error: e.message };
       }
@@ -107,7 +111,10 @@ export function update(skillId, input) {
 export function reset(skillId) {
   const prev = overrides[skillId];
   if (!prev) return { error: "這顆工具沒有被改過。" };
-  if (prev.moodImage) deleteImageFile(prev.moodImage);
+  // 三張圖都要清掉，不然還原後檔案留在 uploads/ 裡變成孤兒檔案
+  for (const field of IMAGE_FIELDS) {
+    if (prev[field]) deleteImageFile(prev[field]);
+  }
   const next = { ...overrides };
   delete next[skillId];
   overrides = next;

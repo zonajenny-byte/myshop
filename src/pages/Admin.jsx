@@ -132,18 +132,18 @@ export default function Admin() {
       name: sk.name, en: sk.en || "", price: sk.price,
       blurb: sk.blurb || "", feat: [...(sk.feat || []), "", "", ""].slice(0, 3),
       limit: sk.limit || "", emoji: sk.emoji || "✦", tint: sk.tint || "#F3EDF9",
-      moodImage: sk.moodImage || null,
+      image: sk.image || null, image2: sk.image2 || null, moodImage: sk.moodImage || null,
     });
     setSkillEditing(sk.id);
     setSkillMsg(null);
   }
 
-  async function onSkillMood(e) {
+  async function onSkillPhoto(e, field) {
     const file = e.target.files?.[0];
     if (!file) return;
     try {
-      const b64 = await imageToBase64(file, 1400);
-      setSkillForm((f) => ({ ...f, moodImage: "data:image/jpeg;base64," + b64 }));
+      const b64 = await imageToBase64(file, field === "moodImage" ? 1400 : 1200);
+      setSkillForm((f) => ({ ...f, [field]: "data:image/jpeg;base64," + b64 }));
     } catch { setSkillMsg({ t: "err", m: "這張圖片讀不了，換一張試試。" }); }
   }
 
@@ -578,6 +578,44 @@ export default function Admin() {
             <textarea className="field" value={skillForm.limit}
               onChange={(e) => setSkillForm({ ...skillForm, limit: e.target.value })} />
 
+            <div className="flabel">主圖（選填，顯示在商品卡片上，沒有的話會用 emoji 圓標代替）</div>
+            {skillForm.image ? (
+              <div style={{ position: "relative", marginBottom: 12 }}>
+                <img src={resolveImageUrl(skillForm.image)} alt="主圖預覽"
+                  style={{ width: "100%", aspectRatio: "4/3", objectFit: "cover", borderRadius: 16 }} />
+                <button className="add danger" onClick={() => setSkillForm({ ...skillForm, image: null })}
+                  style={{ position: "absolute", top: 10, right: 10, padding: "8px 16px", fontSize: 13 }}>
+                  移除
+                </button>
+              </div>
+            ) : (
+              <label className="drop" style={{ marginBottom: 12, padding: "24px 20px" }}>
+                <div className="ic">📷</div>
+                <div className="t">點這裡選一張照片</div>
+                <div className="s">會自動壓縮，手機拍的照片也能直接用</div>
+                <input type="file" accept="image/*" onChange={(e) => onSkillPhoto(e, "image")} style={{ display: "none" }} />
+              </label>
+            )}
+
+            <div className="flabel">第二張圖（選填，客人滑鼠移到卡片上會換成這張）</div>
+            {skillForm.image2 ? (
+              <div style={{ position: "relative", marginBottom: 12 }}>
+                <img src={resolveImageUrl(skillForm.image2)} alt="第二張圖預覽"
+                  style={{ width: "100%", aspectRatio: "4/3", objectFit: "cover", borderRadius: 16 }} />
+                <button className="add danger" onClick={() => setSkillForm({ ...skillForm, image2: null })}
+                  style={{ position: "absolute", top: 10, right: 10, padding: "8px 16px", fontSize: 13 }}>
+                  移除
+                </button>
+              </div>
+            ) : (
+              <label className="drop" style={{ marginBottom: 12, padding: "24px 20px" }}>
+                <div className="ic">🔄</div>
+                <div className="t">點這裡選第二張照片</div>
+                <div className="s">沒有也沒關係，就不會有換圖效果</div>
+                <input type="file" accept="image/*" onChange={(e) => onSkillPhoto(e, "image2")} style={{ display: "none" }} />
+              </label>
+            )}
+
             <div className="flabel">氛圍圖（選填，顯示在商品頁最上面）</div>
             {skillForm.moodImage ? (
               <div style={{ position: "relative", marginBottom: 12 }}>
@@ -592,7 +630,7 @@ export default function Admin() {
               <label className="drop" style={{ marginBottom: 12, padding: "20px" }}>
                 <div className="ic">🖼</div>
                 <div className="t">點這裡選氛圍圖</div>
-                <input type="file" accept="image/*" onChange={onSkillMood} style={{ display: "none" }} />
+                <input type="file" accept="image/*" onChange={(e) => onSkillPhoto(e, "moodImage")} style={{ display: "none" }} />
               </label>
             )}
 
@@ -611,7 +649,7 @@ export default function Admin() {
       {!editing && !artEditing && !skillEditing && (
         <div style={{ marginTop: 36 }}>
           <h2 style={{ fontSize: 22, marginBottom: 4 }}>AI 工具</h2>
-          <p className="sub">可以改名稱、介紹、價格、氛圍圖。工具本身的判讀邏輯寫在程式裡，不會被這裡改到。</p>
+          <p className="sub">可以改名稱、介紹、價格、展示圖，跟水晶商品一樣。工具本身的判讀邏輯寫在程式裡，不會被這裡改到。</p>
           <div className="card">
             {skills.map((sk) => (
               <div className="item" key={sk.id}>
