@@ -24,6 +24,7 @@ import * as discountCodes from "./discountCodes.js";
 import * as announcement from "./announcement.js";
 import * as articles from "./articles.js";
 import * as skillOverrides from "./skillOverrides.js";
+import * as socialLinks from "./socialLinks.js";
 import { UPLOADS_DIR } from "./lib/dataDir.js";
 import * as ecpay from "./lib/ecpay.js";
 import * as line from "./lib/line.js";
@@ -111,6 +112,19 @@ app.delete("/api/admin/products/:id", requireAdmin, (req, res) => {
   res.json({ ok });
 });
 
+/** 輪播圖一次加一張，不是整包覆寫商品資料 */
+app.post("/api/admin/products/:id/gallery", requireAdmin, (req, res) => {
+  const { item, error } = store.addGalleryImage(req.params.id, req.body?.image);
+  if (error) return res.status(400).json({ error: "invalid", message: error });
+  res.json(item);
+});
+
+app.delete("/api/admin/products/:id/gallery/:index", requireAdmin, (req, res) => {
+  const { item, error } = store.removeGalleryImage(req.params.id, Number(req.params.index));
+  if (error) return res.status(404).json({ error: "not_found", message: error });
+  res.json(item);
+});
+
 /* ---------- 健康檢查：確認服務真的活著用 ---------- */
 
 app.get("/health", (req, res) => {
@@ -134,6 +148,30 @@ app.delete("/api/admin/skill-overrides/:id", requireAdmin, (req, res) => {
   const { ok, error } = skillOverrides.reset(req.params.id);
   if (error) return res.status(404).json({ error: "not_found", message: error });
   res.json({ ok });
+});
+
+app.post("/api/admin/skill-overrides/:id/gallery", requireAdmin, (req, res) => {
+  const { item, error } = skillOverrides.addGalleryImage(req.params.id, req.body?.image);
+  if (error) return res.status(400).json({ error: "invalid", message: error });
+  res.json(item);
+});
+
+app.delete("/api/admin/skill-overrides/:id/gallery/:index", requireAdmin, (req, res) => {
+  const { item, error } = skillOverrides.removeGalleryImage(req.params.id, Number(req.params.index));
+  if (error) return res.status(404).json({ error: "not_found", message: error });
+  res.json(item);
+});
+
+/* ---------- 外部連結：LINE、IG、方格子 ---------- */
+
+app.get("/api/social-links", (req, res) => {
+  res.json(socialLinks.get());
+});
+
+app.put("/api/admin/social-links", requireAdmin, (req, res) => {
+  const { item, error } = socialLinks.update(req.body || {});
+  if (error) return res.status(400).json({ error: "invalid", message: error });
+  res.json(item);
 });
 
 /* ---------- 文章 ---------- */

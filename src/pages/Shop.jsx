@@ -1,5 +1,6 @@
 import { usePhysicalProducts } from "../lib/products";
 import { CATEGORIES, DEFAULT_CATEGORY } from "../data/catalog";
+import { useGridCols, GridColsToggle } from "../lib/gridPrefs";
 import ProductCard from "../components/ProductCard";
 
 /**
@@ -9,16 +10,22 @@ import ProductCard from "../components/ProductCard";
 export default function Shop({ categoryKey = DEFAULT_CATEGORY }) {
   const physical = usePhysicalProducts();
   const cat = CATEGORIES.find((c) => c.key === categoryKey) || CATEGORIES[0];
+  const [cols, setCols] = useGridCols();
 
   // 舊資料沒有 category 欄位，一律當成預設分類，不會因為多了分類就消失
   const items = physical.filter((p) => (p.category || DEFAULT_CATEGORY) === categoryKey);
 
   return (
     <section>
-      <span className="pill mint">{cat.en}</span>
-      <h2 className="hover-en" data-en={cat.en}>
-        <span>{cat.name}</span>
-      </h2>
+      <div className="section-head">
+        <div>
+          <span className="pill mint">{cat.en}</span>
+          <h2 className="hover-en" data-en={cat.en}>
+            <span>{cat.name}</span>
+          </h2>
+        </div>
+        <GridColsToggle cols={cols} setCols={setCols} />
+      </div>
       <p className="sub">
         一件一件做的，數量不多。下單後 3–5 個工作天出貨，
         單筆實體商品滿 NT$2,000 免運。
@@ -27,7 +34,7 @@ export default function Shop({ categoryKey = DEFAULT_CATEGORY }) {
       {items.length === 0 ? (
         <p className="empty">這個分類還沒有商品。</p>
       ) : (
-        <div className="pgrid">
+        <div className="pgrid" style={{ "--pgrid-cols": cols }}>
           {items.map((p) => <ProductCard key={p.id} p={{ ...p, kind: "physical" }} />)}
         </div>
       )}

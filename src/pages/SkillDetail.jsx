@@ -1,6 +1,7 @@
 import { Link, useParams } from "react-router-dom";
 import { useSkills } from "../lib/skillOverrides";
 import { useCart, money } from "../lib/cart";
+import ImageCarousel from "../components/ImageCarousel";
 
 /**
  * 所有 AI 工具共用的詳細頁。
@@ -65,6 +66,15 @@ export default function SkillDetail() {
               <div className="item" key={f}><div className="n">✓ {f}</div></div>
             ))}
           </div>
+        </section>
+      )}
+
+      {/* 輪播圖是後台選填的，主圖+輪播圖都沒有就整段不顯示 */}
+      {[skill.image, ...(skill.gallery || [])].filter(Boolean).length > 0 && (
+        <section>
+          <span className="pill">Preview</span>
+          <h2>畫面預覽</h2>
+          <ImageCarousel images={[skill.image, ...(skill.gallery || [])]} alt={skill.name} />
         </section>
       )}
 

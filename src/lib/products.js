@@ -182,6 +182,42 @@ export async function adminRemove(id) {
   return res;
 }
 
+/** 輪播圖一次加一張，跟商品其他欄位分開管理 */
+export async function adminAddGalleryImage(id, image) {
+  if (DEMO) {
+    const list = cache || SEED_PHYSICAL;
+    const idx = list.findIndex((p) => p.id === id);
+    if (idx === -1) throw new Error("找不到這個商品。");
+    const item = { ...list[idx], gallery: [...(list[idx].gallery || []), image] };
+    cache = list.map((p) => (p.id === id ? item : p));
+    writeLocal(cache);
+    notify();
+    return item;
+  }
+  const item = await authedFetch(`/api/admin/products/${id}/gallery`, {
+    method: "POST", body: JSON.stringify({ image }),
+  });
+  await refresh();
+  return item;
+}
+
+export async function adminRemoveGalleryImage(id, index) {
+  if (DEMO) {
+    const list = cache || SEED_PHYSICAL;
+    const idx = list.findIndex((p) => p.id === id);
+    if (idx === -1) throw new Error("找不到這個商品。");
+    const gallery = (list[idx].gallery || []).filter((_, i) => i !== index);
+    const item = { ...list[idx], gallery };
+    cache = list.map((p) => (p.id === id ? item : p));
+    writeLocal(cache);
+    notify();
+    return item;
+  }
+  const item = await authedFetch(`/api/admin/products/${id}/gallery/${index}`, { method: "DELETE" });
+  await refresh();
+  return item;
+}
+
 /** 「還原成範例資料」，方便你在 DEMO 模式弄亂了想重來 */
 export function resetDemoData() {
   cache = SEED_PHYSICAL;

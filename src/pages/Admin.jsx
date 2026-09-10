@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { adminLogin, adminSignOut, isAdminSignedIn } from "../lib/adminApi";
-import { usePhysicalProducts, adminCreate, adminUpdate, adminRemove, resetDemoData, resolveImageUrl } from "../lib/products";
+import { usePhysicalProducts, adminCreate, adminUpdate, adminRemove, adminAddGalleryImage, adminRemoveGalleryImage, resetDemoData, resolveImageUrl } from "../lib/products";
 import { adminGenerate, adminList, adminRevoke } from "../lib/discountCodes";
 import { fetchAnnouncement, adminUpdateAnnouncement } from "../lib/announcement";
+import { fetchSocialLinks, adminUpdateSocialLinks } from "../lib/socialLinks";
 import { adminListArticles, adminGetArticle, adminCreateArticle, adminUpdateArticle, adminRemoveArticle } from "../lib/articles";
-import { useSkills, adminUpdateSkill, adminResetSkill } from "../lib/skillOverrides";
+import { useSkills, adminUpdateSkill, adminResetSkill, adminAddGallerySkill, adminRemoveGallerySkill } from "../lib/skillOverrides";
 import { DEMO, imageToBase64 } from "../lib/api";
 import { money } from "../lib/cart";
 import { CATEGORIES, DEFAULT_CATEGORY } from "../data/catalog";
@@ -71,6 +72,27 @@ export default function Admin() {
       setAnnMsg({ t: "err", m: e.message });
     }
     setAnnBusy(false);
+  }
+
+  const [social, setSocial] = useState(null);
+  const [socialBusy, setSocialBusy] = useState(false);
+  const [socialMsg, setSocialMsg] = useState(null);
+
+  useEffect(() => {
+    if (signedIn) fetchSocialLinks().then(setSocial).catch(() => {});
+  }, [signedIn]);
+
+  async function saveSocial() {
+    setSocialBusy(true);
+    setSocialMsg(null);
+    try {
+      const saved = await adminUpdateSocialLinks(social);
+      setSocial(saved);
+      setSocialMsg({ t: "ok", m: "已更新。" });
+    } catch (e) {
+      setSocialMsg({ t: "err", m: e.message });
+    }
+    setSocialBusy(false);
   }
 
   const EMPTY_ART = { title: "", body: "", tag: "", cover: null, published: false };
@@ -167,6 +189,29 @@ export default function Admin() {
     setSkillBusy(false);
   }
 
+  async function onSkillGalleryAdd(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setSkillBusy(true);
+    try {
+      const b64 = await imageToBase64(file, 1200);
+      await adminAddGallerySkill(skillEditing, "data:image/jpeg;base64," + b64);
+    } catch (err) {
+      setSkillMsg({ t: "err", m: err.message || "這張圖片讀不了，換一張試試。" });
+    }
+    setSkillBusy(false);
+  }
+
+  async function onSkillGalleryRemove(index) {
+    setSkillBusy(true);
+    try {
+      await adminRemoveGallerySkill(skillEditing, index);
+    } catch (err) {
+      setSkillMsg({ t: "err", m: err.message });
+    }
+    setSkillBusy(false);
+  }
+
   async function delArticle(id) {
     if (!confirm("確定要刪除這篇文章嗎？")) return;
     setArtBusy(true);
@@ -230,6 +275,31 @@ export default function Admin() {
 
   function removePhoto(field = "image") {
     setForm((f) => ({ ...f, [field]: null }));
+  }
+
+  const [galleryBusy, setGalleryBusy] = useState(false);
+
+  async function onGalleryAdd(e) {
+    const file = e.target.files?.[0];
+    if (!file || editing === "new") return;
+    setGalleryBusy(true);
+    try {
+      const b64 = await imageToBase64(file, 1200);
+      await adminAddGalleryImage(editing, "data:image/jpeg;base64," + b64);
+    } catch (err) {
+      setErr(err.message || "這張圖片讀不了，換一張試試。");
+    }
+    setGalleryBusy(false);
+  }
+
+  async function onGalleryRemove(index) {
+    setGalleryBusy(true);
+    try {
+      await adminRemoveGalleryImage(editing, index);
+    } catch (err) {
+      setErr(err.message);
+    }
+    setGalleryBusy(false);
   }
 
   async function save() {
@@ -351,6 +421,27 @@ export default function Admin() {
             onChange={(e) => setForm({ ...form, category: e.target.value })}>
             {CATEGORIES.map((c) => <option key={c.key} value={c.key}>{c.name}</option>)}
           </select>
+
+          {editing !== "new" && (
+            <>
+              <div className="flabel">輪播圖（選填，商品詳細頁會用主圖+這幾張輪播展示）</div>
+              <div className="gallery-editor">
+                {(products.find((p) => p.id === editing)?.gallery || []).map((img, i) => (
+                  <div key={img} className="gallery-thumb">
+                    <img src={resolveImageUrl(img)} alt="" />
+                    <button className="add danger" onClick={() => onGalleryRemove(i)} disabled={galleryBusy}>✕</button>
+                  </div>
+                ))}
+                <label className="gallery-add">
+                  {galleryBusy ? "處理中" : "+ 新增"}
+                  <input type="file" accept="image/*" onChange={onGalleryAdd} style={{ display: "none" }} disabled={galleryBusy} />
+                </label>
+              </div>
+            </>
+          )}
+          {editing === "new" && (
+            <p className="msg" style={{ marginBottom: 14 }}>先儲存商品，之後編輯時才能加輪播圖。</p>
+          )}
 
           <label style={{ display: "flex", alignItems: "center", gap: 10, margin: "4px 0 14px" }}>
             <input type="checkbox" checked={!!form.soldOut}
@@ -634,6 +725,20 @@ export default function Admin() {
               </label>
             )}
 
+            <div className="flabel">輪播圖（選填，商品詳細頁會用主圖+這幾張輪播展示）</div>
+            <div className="gallery-editor">
+              {(skills.find((s) => s.id === skillEditing)?.gallery || []).map((img, i) => (
+                <div key={img} className="gallery-thumb">
+                  <img src={resolveImageUrl(img)} alt="" />
+                  <button className="add danger" onClick={() => onSkillGalleryRemove(i)} disabled={skillBusy}>✕</button>
+                </div>
+              ))}
+              <label className="gallery-add">
+                {skillBusy ? "處理中" : "+ 新增"}
+                <input type="file" accept="image/*" onChange={onSkillGalleryAdd} style={{ display: "none" }} disabled={skillBusy} />
+              </label>
+            </div>
+
             <button className="btn" onClick={saveSkill} disabled={skillBusy}>
               {skillBusy ? "儲存中⋯⋯" : "儲存"}
             </button>
@@ -709,6 +814,35 @@ export default function Admin() {
               {annBusy ? "儲存中⋯⋯" : "儲存公告"}
             </button>
             {annMsg && <p className={"msg " + annMsg.t}>{annMsg.m}</p>}
+          </div>
+        </div>
+      )}
+
+      {!editing && !artEditing && !skillEditing && social && (
+        <div style={{ marginTop: 36 }}>
+          <h2 style={{ fontSize: 22, marginBottom: 4 }}>外部連結</h2>
+          <p className="sub">留空的連結，網站上對應的按鈕就不會顯示。</p>
+
+          <div className="card">
+            <div className="flabel">LINE 官方帳號連結</div>
+            <input className="field" value={social.lineUrl || ""}
+              onChange={(e) => setSocial({ ...social, lineUrl: e.target.value })}
+              placeholder="https://line.me/ti/p/xxxxx" />
+
+            <div className="flabel">Instagram 連結</div>
+            <input className="field" value={social.igUrl || ""}
+              onChange={(e) => setSocial({ ...social, igUrl: e.target.value })}
+              placeholder="https://instagram.com/你的帳號" />
+
+            <div className="flabel">方格子（vocus）部落格連結</div>
+            <input className="field" value={social.vocusUrl || ""}
+              onChange={(e) => setSocial({ ...social, vocusUrl: e.target.value })}
+              placeholder="https://vocus.cc/user/xxxxx" />
+
+            <button className="btn" onClick={saveSocial} disabled={socialBusy}>
+              {socialBusy ? "儲存中⋯⋯" : "儲存"}
+            </button>
+            {socialMsg && <p className={"msg " + socialMsg.t}>{socialMsg.m}</p>}
           </div>
         </div>
       )}

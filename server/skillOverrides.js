@@ -11,6 +11,7 @@
  * - toolKey 不在可覆寫清單裡，改不到，判讀邏輯不會被指到不存在的工具
  */
 import fs from "node:fs";
+import crypto from "node:crypto";
 import path from "node:path";
 import { dataFile, UPLOADS_DIR } from "./lib/dataDir.js";
 
@@ -45,7 +46,8 @@ function saveImageIfNeeded(image, skillId, suffix = "") {
   if (buffer.length > MAX_IMAGE_BYTES) throw new Error("圖片太大了，請壓縮到 5MB 以內");
 
   const ext = extRaw === "jpeg" ? "jpg" : extRaw === "svg+xml" ? "svg" : extRaw;
-  const filename = `skill-${skillId}${suffix}-${Date.now()}.${ext}`;
+  const rand = crypto.randomBytes(3).toString("hex");
+  const filename = `skill-${skillId}${suffix}-${Date.now()}-${rand}.${ext}`;
   fs.writeFileSync(path.join(UPLOADS_DIR, filename), buffer);
   return `/uploads/${filename}`;
 }
@@ -115,9 +117,40 @@ export function reset(skillId) {
   for (const field of IMAGE_FIELDS) {
     if (prev[field]) deleteImageFile(prev[field]);
   }
+  (prev.gallery || []).forEach(deleteImageFile);
   const next = { ...overrides };
   delete next[skillId];
   overrides = next;
   save(overrides);
   return { ok: true };
+}
+
+/** 商品頁的輪播圖，一次加一張，跟 store.js 的實體商品用同一套邏輯 */
+export function addGalleryImage(skillId, image) {
+  if (!image) return { error: "沒有圖片。" };
+  let saved;
+  try {
+    saved = saveImageIfNeeded(image, skillId, "-gallery");
+  } catch (e) {
+    return { error: e.message };
+  }
+  const prev = overrides[skillId] || {};
+  const gallery = [...(prev.gallery || []), saved];
+  overrides = { ...overrides, [skillId]: { ...prev, gallery, updatedAt: new Date().toISOString() } };
+  save(overrides);
+  return { item: overrides[skillId] };
+}
+
+export function removeGalleryImage(skillId, index) {
+  const prev = overrides[skillId];
+  if (!prev) return { error: "這顆工具沒有輪播圖。" };
+  const gallery = prev.gallery || [];
+  const target = gallery[index];
+  if (target === undefined) return { error: "找不到這張圖片。" };
+
+  deleteImageFile(target);
+  const nextGallery = gallery.filter((_, i) => i !== index);
+  overrides = { ...overrides, [skillId]: { ...prev, gallery: nextGallery, updatedAt: new Date().toISOString() } };
+  save(overrides);
+  return { item: overrides[skillId] };
 }

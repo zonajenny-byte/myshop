@@ -11,6 +11,7 @@
  * 不會把整包 base64 塞進 products.json——那樣檔案會越養越大、每次讀商品清單也變慢。
  */
 import fs from "node:fs";
+import crypto from "node:crypto";
 import path from "node:path";
 import { dataFile, UPLOADS_DIR } from "./lib/dataDir.js";
 
@@ -103,7 +104,8 @@ function saveImageIfNeeded(image, productId, suffix = "") {
     throw new Error("圖片太大了，請壓縮到 5MB 以內");
   }
 
-  const filename = `${productId}${suffix}-${Date.now()}.${ext === "jpeg" ? "jpg" : ext}`;
+  const rand = crypto.randomBytes(3).toString("hex");
+  const filename = `${productId}${suffix}-${Date.now()}-${rand}.${ext === "jpeg" ? "jpg" : ext}`;
   fs.writeFileSync(path.join(UPLOADS_DIR, filename), buffer);
   return `/uploads/${filename}`;
 }
@@ -164,6 +166,9 @@ export function create(input) {
     soldOut: !!input.soldOut,
     image,
     image2,
+    // 商品詳細頁的輪播圖，跟主圖/第二張圖分開管理——那兩張是給卡片 hover 用的，
+    // 這裡是給「點進商品頁看更多角度」用的，新建商品先給空陣列
+    gallery: [],
   };
 
   products = [...products, item];
@@ -226,8 +231,47 @@ export function remove(id) {
   if (products.length === before) return { error: "找不到這個商品。" };
   if (target?.image) deleteImageFile(target.image);
   if (target?.image2) deleteImageFile(target.image2);
+  (target?.gallery || []).forEach(deleteImageFile);
   save(products);
   return { ok: true };
+}
+
+/**
+ * 輪播圖一次加一張，不是整包覆寫——這樣後台上傳體驗是「按一次加一張」，
+ * 不用每次都把所有既有圖片重新傳一次。
+ */
+export function addGalleryImage(id, image) {
+  const idx = products.findIndex((p) => p.id === id);
+  if (idx === -1) return { error: "找不到這個商品。" };
+  if (!image) return { error: "沒有圖片。" };
+
+  let saved;
+  try {
+    saved = saveImageIfNeeded(image, id, "-gallery");
+  } catch (e) {
+    return { error: e.message };
+  }
+
+  const gallery = [...(products[idx].gallery || []), saved];
+  products = products.map((p) => (p.id === id ? { ...p, gallery } : p));
+  save(products);
+  return { item: products.find((p) => p.id === id) };
+}
+
+/** 用陣列位置刪除單張輪播圖，同時把實體檔案也清掉 */
+export function removeGalleryImage(id, index) {
+  const idx = products.findIndex((p) => p.id === id);
+  if (idx === -1) return { error: "找不到這個商品。" };
+
+  const gallery = products[idx].gallery || [];
+  const target = gallery[index];
+  if (target === undefined) return { error: "找不到這張圖片。" };
+
+  deleteImageFile(target);
+  const nextGallery = gallery.filter((_, i) => i !== index);
+  products = products.map((p) => (p.id === id ? { ...p, gallery: nextGallery } : p));
+  save(products);
+  return { item: products.find((p) => p.id === id) };
 }
 
 function validate(input) {

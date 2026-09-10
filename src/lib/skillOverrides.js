@@ -115,3 +115,48 @@ export async function adminResetSkill(skillId) {
   notify();
   return data;
 }
+
+/** 商品頁的輪播圖，一次加一張 */
+export async function adminAddGallerySkill(skillId, image) {
+  if (DEMO) {
+    const map = readLocal();
+    const prev = map[skillId] || {};
+    const next = { ...map, [skillId]: { ...prev, gallery: [...(prev.gallery || []), image] } };
+    writeLocal(next);
+    cache = next;
+    notify();
+    return next[skillId];
+  }
+  const res = await fetch(`${API_BASE}/api/admin/skill-overrides/${encodeURIComponent(skillId)}/gallery`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${adminToken.get()}` },
+    body: JSON.stringify({ image }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.message || `新增失敗（${res.status}）`);
+  cache = { ...(cache || {}), [skillId]: data };
+  notify();
+  return data;
+}
+
+export async function adminRemoveGallerySkill(skillId, index) {
+  if (DEMO) {
+    const map = readLocal();
+    const prev = map[skillId] || {};
+    const gallery = (prev.gallery || []).filter((_, i) => i !== index);
+    const next = { ...map, [skillId]: { ...prev, gallery } };
+    writeLocal(next);
+    cache = next;
+    notify();
+    return next[skillId];
+  }
+  const res = await fetch(`${API_BASE}/api/admin/skill-overrides/${encodeURIComponent(skillId)}/gallery/${index}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${adminToken.get()}` },
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.message || `刪除失敗（${res.status}）`);
+  cache = { ...(cache || {}), [skillId]: data };
+  notify();
+  return data;
+}

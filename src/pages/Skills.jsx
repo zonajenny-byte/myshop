@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { SKILL_BUNDLE, WAVE_1_IDS, FEATURED_IDS, COMING_SOON } from "../data/catalog";
 import { useSkills } from "../lib/skillOverrides";
+import { useGridCols, GridColsToggle } from "../lib/gridPrefs";
 import ProductCard from "../components/ProductCard";
 import { useCart, money } from "../lib/cart";
 import { notifyMe } from "../lib/api";
@@ -9,6 +10,7 @@ import { notifyMe } from "../lib/api";
 export default function Skills() {
   const { addAllSkills, skillsFull } = useCart();
   const [notified, setNotified] = useState({});
+  const [cols, setCols] = useGridCols();
 
   async function onNotify(name) {
     const email = prompt("做好之後通知你，Email 填一下：");
@@ -27,15 +29,21 @@ export default function Skills() {
   // 主打的已經在最上面單獨列過，這裡不重複
   const wave2 = SKILLS.filter((s) => !WAVE_1_IDS.includes(s.id) && !FEATURED_IDS.includes(s.id));
   const single = wave1.length * 850;
+  const gridStyle = { "--pgrid-cols": cols };
 
   return (
     <>
       {featured.length > 0 && (
         <section>
-          <span className="pill">Featured</span>
-          <h2>主打三顆</h2>
+          <div className="section-head">
+            <div>
+              <span className="pill">Featured</span>
+              <h2>主打三顆</h2>
+            </div>
+            <GridColsToggle cols={cols} setCols={setCols} />
+          </div>
           <p className="sub">最多人用的三顆，點進去看完整介紹。</p>
-          <div className="pgrid">
+          <div className="pgrid" style={gridStyle}>
             {featured.map((p) => <ProductCard key={p.id} p={p} />)}
           </div>
         </section>
@@ -48,7 +56,7 @@ export default function Skills() {
           七顆都能在<Link to="/tools">工具台</Link>直接用。
           網頁版手機電腦都支援，不需要下載或安裝任何東西。
         </p>
-        <div className="pgrid">
+        <div className="pgrid" style={gridStyle}>
           {wave1.map((p) => <ProductCard key={p.id} p={p} />)}
         </div>
 
@@ -81,7 +89,7 @@ export default function Skills() {
           <span className="pill mint">Wave 2 · Available Now</span>
           <h2>新上的幾顆</h2>
           <p className="sub">單顆買，還沒有套裝價。跟七顆共用同一個判讀次數池。</p>
-          <div className="pgrid">
+          <div className="pgrid" style={gridStyle}>
             {wave2.map((p) => <ProductCard key={p.id} p={p} />)}
           </div>
         </section>

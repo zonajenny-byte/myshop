@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, NavLink, Route, Routes, useLocation } from "react-router-dom";
 import { CartProvider, useCart } from "./lib/cart";
 import { fetchPhysical, primeSkills } from "./lib/products";
+import { fetchSocialLinks } from "./lib/socialLinks";
 import CartDrawer from "./components/CartDrawer";
 import AnnouncementModal from "./components/AnnouncementModal";
 import Home from "./pages/Home";
@@ -93,6 +94,34 @@ function CartFab() {
   );
 }
 
+/**
+ * LINE、IG 的官方連結，堆疊在購物袋按鈕上方。
+ * 後台沒填連結的就不顯示——不會有一顆按鈕點下去哪裡都去不了。
+ */
+function SocialFabs() {
+  const [links, setLinks] = useState(null);
+  useEffect(() => { fetchSocialLinks().then(setLinks); }, []);
+  if (!links) return null;
+
+  const items = [
+    links.lineUrl && { key: "line", url: links.lineUrl, label: "官方 LINE", icon: "💬" },
+    links.igUrl && { key: "ig", url: links.igUrl, label: "官方 Instagram", icon: "📷" },
+  ].filter(Boolean);
+
+  if (items.length === 0) return null;
+
+  return (
+    <div className="fab-social-stack">
+      {items.map((it) => (
+        <a key={it.key} className="fab-social" href={it.url} target="_blank"
+          rel="noopener noreferrer" aria-label={it.label} title={it.label}>
+          {it.icon}
+        </a>
+      ))}
+    </div>
+  );
+}
+
 function Footer() {
   return (
     <footer>
@@ -140,6 +169,7 @@ export default function App() {
         </Routes>
       </main>
       <Footer />
+      <SocialFabs />
       <CartFab />
       <CartDrawer />
       <HomeAnnouncement />

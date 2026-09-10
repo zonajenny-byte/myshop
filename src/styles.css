@@ -130,6 +130,17 @@ nav a.on{background:var(--blush);color:var(--rose-d)}
   box-shadow:0 2px 6px rgba(224,92,135,.4)}
 @media(max-width:520px){.fab-cart{right:16px;bottom:16px;width:56px;height:56px}}
 
+/* 官方 LINE / IG，堆疊在購物袋按鈕正上方 */
+.fab-social-stack{position:fixed;right:22px;bottom:96px;z-index:40;
+  display:flex;flex-direction:column;gap:12px}
+.fab-social{width:46px;height:46px;border-radius:50%;background:#fff;
+  box-shadow:0 4px 14px rgba(61,52,68,.16);display:flex;align-items:center;justify-content:center;
+  font-size:20px;text-decoration:none;transition:transform .15s ease,box-shadow .15s ease}
+.fab-social:hover{transform:translateY(-2px) scale(1.06);text-decoration:none;
+  box-shadow:0 6px 18px rgba(61,52,68,.22)}
+@media(max-width:520px){.fab-social-stack{right:16px;bottom:82px;gap:10px}
+  .fab-social{width:42px;height:42px;font-size:18px}}
+
 /* ---------- hero ---------- */
 /* 首頁封面：線條插畫疊在原本的粉綠漸層上。
    插畫用 SVG data URI 直接寫在 CSS 裡，不用多一個檔案請求。
@@ -172,7 +183,15 @@ h3{font-family:var(--tc);font-weight:500}
 
 /* ---------- 瀏覽用商品卡（兩欄並排，圖大字少） ---------- */
 .pgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px 12px}
-@media(min-width:900px){.pgrid{grid-template-columns:repeat(3,1fr);gap:20px 16px}}
+@media(min-width:900px){.pgrid{grid-template-columns:repeat(var(--pgrid-cols,3),1fr);gap:20px 16px}}
+
+/* 一列顯示幾件的切換鈕，放在商品列表頁右上角 */
+.section-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.gridcols{display:flex;gap:2px;background:var(--rule);border-radius:10px;padding:2px;flex-shrink:0}
+.gridcols button{width:32px;height:30px;border-radius:8px;font-family:var(--mono);font-size:13px;
+  color:var(--ink2);background:none;transition:background .15s ease,color .15s ease}
+.gridcols button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(61,52,68,.14)}
+@media(max-width:719px){.gridcols{display:none}}
 .pcard{display:block;text-decoration:none;color:inherit}
 .pcard:hover{text-decoration:none}
 .pcard-img{position:relative;width:100%;aspect-ratio:3/4;border-radius:14px;overflow:hidden;
@@ -210,6 +229,22 @@ h3{font-family:var(--tc);font-weight:500}
   display:flex;align-items:center;justify-content:center;box-shadow:var(--sh)}
 .detail-img img{width:100%;height:100%;object-fit:cover;display:block}
 .detail-info{display:flex;flex-direction:column}
+
+/* ---------- 商品詳細頁輪播圖 ---------- */
+.carousel-frame{position:relative;width:100%;aspect-ratio:3/4;border-radius:20px;
+  overflow:hidden;box-shadow:var(--sh);background:var(--card)}
+.carousel-frame img{width:100%;height:100%;object-fit:cover;display:block}
+.carousel-arrow{position:absolute;top:50%;transform:translateY(-50%);width:38px;height:38px;
+  border-radius:50%;background:rgba(255,255,255,.88);color:var(--ink);font-size:20px;
+  display:flex;align-items:center;justify-content:center;line-height:1;
+  box-shadow:0 2px 8px rgba(61,52,68,.16);transition:background .15s ease}
+.carousel-arrow:hover{background:#fff}
+.carousel-arrow.left{left:10px}
+.carousel-arrow.right{right:10px}
+.carousel-dots{display:flex;justify-content:center;gap:7px;margin-top:12px}
+.carousel-dots button{width:7px;height:7px;border-radius:50%;background:var(--rule);
+  padding:0;transition:background .15s ease,transform .15s ease}
+.carousel-dots button.on{background:var(--rose-d);transform:scale(1.3)}
 @media(min-width:720px){.grid{grid-template-columns:1fr 1fr}}
 .card{background:var(--card);border-radius:24px;box-shadow:var(--sh);padding:22px;
   display:flex;flex-direction:column;transition:transform .16s ease,box-shadow .16s ease}
@@ -529,3 +564,15 @@ footer .fbrand{font-size:14px;color:var(--ink);font-style:italic;
 .bundle-card .bc-strike{font-size:12px;color:var(--go-ink);opacity:.6;
   text-decoration:line-through;letter-spacing:.02em}
 .bundle-card .bc-price{font-family:var(--sans);font-size:19px;font-weight:700;color:var(--go-ink)}
+
+
+/* ---------- 後台輪播圖編輯器 ---------- */
+.gallery-editor{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px}
+.gallery-thumb{position:relative;width:84px;height:84px;border-radius:12px;overflow:hidden}
+.gallery-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.gallery-thumb button{position:absolute;top:3px;right:3px;width:22px;height:22px;
+  border-radius:50%;font-size:12px;padding:0;line-height:1}
+.gallery-add{width:84px;height:84px;border-radius:12px;border:1.5px dashed var(--rule);
+  display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--ink2);
+  cursor:pointer;text-align:center;padding:6px}
+.gallery-add:hover{border-color:var(--rose-d);color:var(--rose-d)}

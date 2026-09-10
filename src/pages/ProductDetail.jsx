@@ -1,7 +1,8 @@
 import { Link, useParams } from "react-router-dom";
-import { usePhysicalProducts, resolveImageUrl } from "../lib/products";
+import { usePhysicalProducts } from "../lib/products";
 import { CATEGORIES, DEFAULT_CATEGORY } from "../data/catalog";
 import { useCart, money } from "../lib/cart";
+import ImageCarousel from "../components/ImageCarousel";
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -20,7 +21,8 @@ export default function ProductDetail() {
 
   const inCart = has(p.id);
   const soldOut = p.stock === 0;
-  const photo = resolveImageUrl(p.image);
+  // 主圖排第一張，後面接後台加的輪播圖——只有主圖時輪播會自動退化成單張顯示
+  const images = [p.image, ...(p.gallery || [])].filter(Boolean);
   // 從哪個分類進來就回哪個分類，不要一律丟回水晶頁
   const cat = CATEGORIES.find((c) => c.key === (p.category || DEFAULT_CATEGORY)) || CATEGORIES[0];
 
@@ -30,11 +32,13 @@ export default function ProductDetail() {
 
       <section style={{ paddingTop: 8 }}>
         <div className="detail-hero">
-          <div className="detail-img" style={{ background: p.tint }}>
-            {photo
-              ? <img src={photo} alt={p.name} />
-              : <span style={{ fontSize: 72 }}>{p.emoji}</span>}
-          </div>
+          {images.length > 0 ? (
+            <ImageCarousel images={images} alt={p.name} />
+          ) : (
+            <div className="detail-img" style={{ background: p.tint }}>
+              <span style={{ fontSize: 72 }}>{p.emoji}</span>
+            </div>
+          )}
           <div className="detail-info">
             <div className="id">{p.id}</div>
             <h2 style={{ margin: "6px 0 4px" }}>{p.name}</h2>
