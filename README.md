@@ -331,6 +331,23 @@ node -e "import('./lib/line.js').then(m => console.log(m.formatSummary({count:52
 
 ---
 
+### 資料持久保存（Railway Volume）
+
+**這個非常重要，正式營運前一定要設定。** 詳細步驟見 `server/README-VOLUME.md`，這裡只講重點。
+
+Railway 每次重新部署都是整個容器重建，後台上傳的圖片、改過的文字，如果沒有掛 Volume，**每次重新部署都會消失**。所有資料存取（`store.js`、`orders.js`、`entitlements.js`、`subscriptions.js`、`discountCodes.js`、`announcement.js`、`articles.js`、`skillOverrides.js`）都統一透過 `server/lib/dataDir.js` 決定路徑：
+
+```
+RAILWAY_VOLUME_MOUNT_PATH 環境變數 → 有掛 Volume 用這個路徑
+沒有的話                          → 退回 server/ 目錄本身（本機開發的行為，跟以前一樣）
+```
+
+Railway 掛 Volume 時會自動注入 `RAILWAY_VOLUME_MOUNT_PATH`，不用手動設定任何環境變數。**測過完整流程**：掛 Volume → 上傳圖片、改後台內容 → 模擬整個容器重建（清空 server/ 底下所有資料檔跟 uploads/）→ 重新啟動 → 商品、圖片檔案本身、AI 工具的編輯內容全部還在。
+
+沒掛 Volume 不會報錯，只是退回目前的行為（重新部署會清空）——所以看到這段說明不用緊張，接不接、什麼時候接都可以，先確認商店運作正常再處理也沒關係。
+
+---
+
 ### AI 工具的後台編輯
 
 後台可以改 AI 工具的名稱、英文名、價格、一句話介紹、功能重點、使用限制、氛圍圖。

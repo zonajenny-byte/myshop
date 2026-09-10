@@ -12,14 +12,10 @@
  */
 import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { dataFile, UPLOADS_DIR } from "./lib/dataDir.js";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const FILE = path.join(__dirname, "products.json");
-const UPLOADS_DIR = path.join(__dirname, "uploads");
-const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5MB，前端已經有壓縮，正常不會逼近這個上限
-
-fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+const FILE = dataFile("products.json");
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
 const SEED = [
   {

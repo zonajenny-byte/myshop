@@ -6,12 +6,10 @@
  * 不是結帳當下——結帳只驗證碼還沒被用過，避免有人結帳到一半棄單卻把碼燒掉。
  */
 import fs from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
 import crypto from "node:crypto";
+import { dataFile } from "./lib/dataDir.js";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const FILE = path.join(__dirname, "discountCodes.json");
+const FILE = dataFile("discountCodes.json");
 
 export const DISCOUNT_PERCENT = 30; // 打七折 = 折扣 30%
 

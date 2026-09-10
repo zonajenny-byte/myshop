@@ -6,11 +6,9 @@
  * 活動結束先關起來，下次要用再打開比較方便。
  */
 import fs from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { dataFile } from "./lib/dataDir.js";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const FILE = path.join(__dirname, "announcement.json");
+const FILE = dataFile("announcement.json");
 
 const DEFAULT = {
   enabled: true,

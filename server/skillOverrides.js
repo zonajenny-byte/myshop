@@ -12,14 +12,10 @@
  */
 import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { dataFile, UPLOADS_DIR } from "./lib/dataDir.js";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const FILE = path.join(__dirname, "skillOverrides.json");
-const UPLOADS_DIR = path.join(__dirname, "uploads");
+const FILE = dataFile("skillOverrides.json");
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
-
-fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 
 /** 只有這些欄位能從後台改。toolKey、kind、id 刻意不在裡面。 */
 const EDITABLE = ["name", "en", "price", "blurb", "feat", "limit", "emoji", "tint", "moodImage"];

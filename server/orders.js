@@ -3,12 +3,10 @@
  * 正式量大之後建議換真資料庫，介面（create/get/markPaid/markFailed）保持一樣就好。
  */
 import fs from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
 import crypto from "node:crypto";
+import { dataFile } from "./lib/dataDir.js";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const FILE = path.join(__dirname, "orders.json");
+const FILE = dataFile("orders.json");
 
 function load() {
   if (!fs.existsSync(FILE)) return [];

@@ -7,11 +7,9 @@
  * 定期定額 API（欄位跟簽章方式都不一樣），現在還沒做這塊。
  */
 import fs from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { dataFile } from "./lib/dataDir.js";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const FILE = path.join(__dirname, "subscriptions.json");
+const FILE = dataFile("subscriptions.json");
 
 function load() {
   if (!fs.existsSync(FILE)) return {};

@@ -4,11 +4,9 @@
  * （另一組還沒接的端點，見根目錄 README）會讀寫這裡。
  */
 import fs from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { dataFile } from "./lib/dataDir.js";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const FILE = path.join(__dirname, "entitlements.json");
+const FILE = dataFile("entitlements.json");
 
 const CREDITS_PER_SKILL = 300;
 

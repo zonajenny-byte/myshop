@@ -9,15 +9,11 @@
  */
 import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 import crypto from "node:crypto";
+import { dataFile, UPLOADS_DIR } from "./lib/dataDir.js";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const FILE = path.join(__dirname, "articles.json");
-const UPLOADS_DIR = path.join(__dirname, "uploads");
+const FILE = dataFile("articles.json");
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
-
-fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 
 function load() {
   if (!fs.existsSync(FILE)) return [];

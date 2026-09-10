@@ -24,6 +24,7 @@ import * as discountCodes from "./discountCodes.js";
 import * as announcement from "./announcement.js";
 import * as articles from "./articles.js";
 import * as skillOverrides from "./skillOverrides.js";
+import { UPLOADS_DIR } from "./lib/dataDir.js";
 import * as ecpay from "./lib/ecpay.js";
 import * as line from "./lib/line.js";
 import * as email from "./lib/email.js";
@@ -41,8 +42,8 @@ app.use(express.json({
 }));
 // 綠界的通知是表單格式（application/x-www-form-urlencoded），json() 不吃這個要另外掛
 app.use(express.urlencoded({ extended: true }));
-// 商品照片檔案，上傳後存在 uploads/，這裡讓它能被公開讀取
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+// 商品照片檔案，上傳後存在 Volume（或本機開發時的 server/uploads/），這裡讓它能被公開讀取
+app.use("/uploads", express.static(UPLOADS_DIR));
 
 const origins = (process.env.CORS_ORIGIN || "http://localhost:5173").split(",");
 app.use(cors({ origin: origins }));
