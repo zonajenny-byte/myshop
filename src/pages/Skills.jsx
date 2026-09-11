@@ -49,6 +49,17 @@ export default function Skills() {
         </section>
       )}
 
+      {wave2.length > 0 && (
+        <section>
+          <span className="pill mint">Wave 2 · Available Now</span>
+          <h2>新上的幾顆</h2>
+          <p className="sub">單顆買，還沒有套裝價。跟七顆共用同一個判讀次數池。</p>
+          <div className="pgrid" style={gridStyle}>
+            {wave2.map((p) => <ProductCard key={p.id} p={p} />)}
+          </div>
+        </section>
+      )}
+
       <section>
         <span className="pill">Wave 1 · Available Now</span>
         <h2>七顆生活工具</h2>
@@ -83,17 +94,6 @@ export default function Skills() {
           </button>
         </div>
       </section>
-
-      {wave2.length > 0 && (
-        <section>
-          <span className="pill mint">Wave 2 · Available Now</span>
-          <h2>新上的幾顆</h2>
-          <p className="sub">單顆買，還沒有套裝價。跟七顆共用同一個判讀次數池。</p>
-          <div className="pgrid" style={gridStyle}>
-            {wave2.map((p) => <ProductCard key={p.id} p={p} />)}
-          </div>
-        </section>
-      )}
 
       <section>
         <span className="pill mint">In Progress</span>
