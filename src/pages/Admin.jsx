@@ -8,10 +8,10 @@ import { adminListArticles, adminGetArticle, adminCreateArticle, adminUpdateArti
 import { useSkills, adminUpdateSkill, adminResetSkill, adminAddGallerySkill, adminRemoveGallerySkill } from "../lib/skillOverrides";
 import { DEMO, imageToBase64 } from "../lib/api";
 import { money } from "../lib/cart";
-import { CATEGORIES, DEFAULT_CATEGORY } from "../data/catalog";
+import { CATEGORIES, DEFAULT_CATEGORY, CHAKRAS } from "../data/catalog";
 
 const EMPTY = { id: "", name: "", en: "", price: "", stock: "", blurb: "", emoji: "✦", tint: "#F3EDF9",
-  image: null, image2: null, category: DEFAULT_CATEGORY, soldOut: false, spec: [["", ""], ["", ""], ["", ""]] };
+  image: null, image2: null, category: DEFAULT_CATEGORY, soldOut: false, chakras: [], spec: [["", ""], ["", ""], ["", ""]] };
 
 export default function Admin() {
   const [signedIn, setSignedIn] = useState(isAdminSignedIn());
@@ -247,6 +247,7 @@ export default function Admin() {
       image2: p.image2 || null,
       category: p.category || DEFAULT_CATEGORY,
       soldOut: !!p.soldOut,
+      chakras: p.chakras || [],
       spec: [...(p.spec || []), ["", ""], ["", ""], ["", ""]].slice(0, 3),
     });
     setEditing(p.id);
@@ -448,6 +449,25 @@ export default function Admin() {
               onChange={(e) => setForm({ ...form, soldOut: e.target.checked })} />
             <span style={{ fontSize: 14 }}>手動標成售完（不管庫存多少，客人都無法加入購物袋）</span>
           </label>
+
+          <div className="flabel">對應脈輪（選填，可複選，一件水晶常對應不只一個）</div>
+          <div className="chakra-picker">
+            {CHAKRAS.map((c) => {
+              const on = (form.chakras || []).includes(c.key);
+              return (
+                <button key={c.key} type="button"
+                  className={"chakra-chip" + (on ? " on" : "")}
+                  style={on ? { background: c.color, borderColor: c.color } : { borderColor: c.color, color: c.color }}
+                  onClick={() => {
+                    const cur = form.chakras || [];
+                    const next = on ? cur.filter((k) => k !== c.key) : [...cur, c.key];
+                    setForm({ ...form, chakras: next });
+                  }}>
+                  {c.name}
+                </button>
+              );
+            })}
+          </div>
 
           <div className="flabel">名稱</div>
           <input className="field" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}

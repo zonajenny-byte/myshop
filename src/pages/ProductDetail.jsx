@@ -1,6 +1,6 @@
 import { Link, useParams } from "react-router-dom";
 import { usePhysicalProducts } from "../lib/products";
-import { CATEGORIES, DEFAULT_CATEGORY } from "../data/catalog";
+import { CATEGORIES, DEFAULT_CATEGORY, CHAKRAS } from "../data/catalog";
 import { useCart, money } from "../lib/cart";
 import ImageCarousel from "../components/ImageCarousel";
 
@@ -44,6 +44,19 @@ export default function ProductDetail() {
             <h2 style={{ margin: "6px 0 4px" }}>{p.name}</h2>
             <div className="en">{(p.en || "").toUpperCase()}</div>
             <p className="blurb" style={{ marginTop: 14 }}>{p.blurb}</p>
+            {p.chakras?.length > 0 && (
+              <div className="chakra-tags">
+                {p.chakras.map((key) => {
+                  const c = CHAKRAS.find((x) => x.key === key);
+                  if (!c) return null;
+                  return (
+                    <span key={key} className="chakra-tag" style={{ borderColor: c.color, color: c.color }}>
+                      {c.name}
+                    </span>
+                  );
+                })}
+              </div>
+            )}
             <div className="price" style={{ marginTop: 18 }}>{money(p.price)}</div>
             <button className="btn" onClick={() => toggle(p.id)} disabled={soldOut}>
               {soldOut ? "已售完" : inCart ? "✓ 已加入購物袋" : "加入購物袋"}

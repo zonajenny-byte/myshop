@@ -576,3 +576,22 @@ footer .fbrand{font-size:14px;color:var(--ink);font-style:italic;
   display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--ink2);
   cursor:pointer;text-align:center;padding:6px}
 .gallery-add:hover{border-color:var(--rose-d);color:var(--rose-d)}
+
+
+/* ---------- 後台脈輪選擇器 ---------- */
+.chakra-picker{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.chakra-chip{padding:7px 14px;border-radius:16px;border:1.5px solid;background:#fff;
+  font-size:13px;transition:background .15s ease,color .15s ease}
+.chakra-chip.on{color:#fff}
+
+
+/* ---------- 水晶頁的脈輪篩選器 ---------- */
+.chakra-filter{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:4px 0 22px}
+.chakra-clear{font-size:12.5px;color:var(--ink2);text-decoration:underline;
+  padding:6px 4px;background:none}
+.chakra-clear:hover{color:var(--rose-d)}
+
+
+/* ---------- 商品詳細頁的脈輪標籤（唯讀展示） ---------- */
+.chakra-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.chakra-tag{font-size:11.5px;padding:4px 11px;border-radius:12px;border:1.3px solid;background:#fff}

@@ -18,11 +18,28 @@ import { dataFile, UPLOADS_DIR } from "./lib/dataDir.js";
 const FILE = dataFile("products.json");
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
+/**
+ * 七大脈輪的代碼清單，只在後端做「這個值合不合法」的檢查用。
+ * 故意不從 src/data/catalog.js 匯入——後端跟前端是分開部署的兩個東西
+ * （Railway 的 Root Directory 設成 server，部署環境裡沒有 src/ 這個資料夾），
+ * 跨過去 import 在本機測試看起來會過，上線會直接找不到檔案而壞掉。
+ * 跟 lib/toolRunner.js 的 SKILL_ID_MAP 是同一個道理：後端自己保留一份，
+ * 顯示用的中文名稱、顏色留在前端就好，這裡只需要合法的 key 有哪些。
+ */
+const CHAKRA_KEYS = ["root", "sacral", "solar", "heart", "throat", "third_eye", "crown"];
+
+/** 只留下真的存在的脈輪代碼，擋掉亂傳的值，同一個代碼重複也濾掉 */
+function sanitizeChakras(input) {
+  if (!Array.isArray(input)) return [];
+  return [...new Set(input.filter((k) => CHAKRA_KEYS.includes(k)))];
+}
+
 const SEED = [
   {
     id: "PH-01",
     kind: "physical",
     category: "crystal",
+    chakras: ["third_eye", "crown"],
     name: "月相手鍊",
     en: "Moon Phase Bracelet",
     price: 1280,
@@ -125,8 +142,10 @@ export function get(id) {
 }
 
 function slugId(name) {
-  const base = "PH-" + Date.now().toString(36).toUpperCase();
-  return base;
+  // 純靠 Date.now() 在同一毫秒內連續呼叫會撞號（曾經在測試裡實際踩到），
+  // 補一段隨機碼確保不會撞，跟圖片檔名的防撞邏輯是同一個道理
+  const rand = crypto.randomBytes(2).toString("hex").toUpperCase();
+  return "PH-" + Date.now().toString(36).toUpperCase() + rand;
 }
 
 export function create(input) {
@@ -159,6 +178,8 @@ export function create(input) {
     emoji: input.emoji?.trim() || "✦",
     tint: input.tint?.trim() || "#F3EDF9",
     category: input.category || "crystal",
+    // 一件水晶常對應不只一個脈輪，所以是陣列。sanitizeChakras 會濾掉亂傳的值
+    chakras: sanitizeChakras(input.chakras),
     // 這支 store 只管實體商品，kind 固定 physical。
     // 前端購物袋靠 kind 分類（算運費、判斷要不要收地址），少了它會被當成不明品項而漏算。
     kind: "physical",
@@ -216,6 +237,7 @@ export function update(id, input) {
     price: Number(input.price ?? products[idx].price),
     stock: Number(input.stock ?? products[idx].stock),
     soldOut: input.soldOut !== undefined ? !!input.soldOut : products[idx].soldOut,
+    chakras: input.chakras !== undefined ? sanitizeChakras(input.chakras) : (products[idx].chakras || []),
     image,
     image2,
   };

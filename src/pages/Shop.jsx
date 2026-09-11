@@ -1,19 +1,35 @@
+import { useState } from "react";
 import { usePhysicalProducts } from "../lib/products";
-import { CATEGORIES, DEFAULT_CATEGORY } from "../data/catalog";
+import { CATEGORIES, DEFAULT_CATEGORY, CHAKRAS } from "../data/catalog";
 import { useGridCols, GridColsToggle } from "../lib/gridPrefs";
 import ProductCard from "../components/ProductCard";
 
 /**
  * 實體商品頁。水晶跟能量選物共用這一支，靠 categoryKey 決定顯示哪一類，
  * 不用為每個分類各寫一頁——之後要再開分類，改 catalog.js 的 CATEGORIES 就好。
+ *
+ * 脈輪篩選只在水晶分類顯示——能量選物（鼠尾草、筆記本之類）沒有脈輪這個概念，
+ * 篩選器出現在那頁會讓人以為每件商品都該有脈輪標籤。
  */
 export default function Shop({ categoryKey = DEFAULT_CATEGORY }) {
   const physical = usePhysicalProducts();
   const cat = CATEGORIES.find((c) => c.key === categoryKey) || CATEGORIES[0];
   const [cols, setCols] = useGridCols();
+  const [activeChakras, setActiveChakras] = useState([]);
+  const isCrystal = categoryKey === "crystal";
 
   // 舊資料沒有 category 欄位，一律當成預設分類，不會因為多了分類就消失
-  const items = physical.filter((p) => (p.category || DEFAULT_CATEGORY) === categoryKey);
+  const byCategory = physical.filter((p) => (p.category || DEFAULT_CATEGORY) === categoryKey);
+
+  // 選了脈輪就用「符合其中任一個」篩，不是要求同時符合全部選的脈輪——
+  // 選海底輪+心輪，是想看「這兩個裡面有沾到邊」的水晶，不是同時對應兩者的
+  const items = isCrystal && activeChakras.length > 0
+    ? byCategory.filter((p) => (p.chakras || []).some((c) => activeChakras.includes(c)))
+    : byCategory;
+
+  function toggleChakra(key) {
+    setActiveChakras((cur) => cur.includes(key) ? cur.filter((k) => k !== key) : [...cur, key]);
+  }
 
   return (
     <section>
@@ -31,8 +47,28 @@ export default function Shop({ categoryKey = DEFAULT_CATEGORY }) {
         單筆實體商品滿 NT$2,000 免運。
       </p>
 
+      {isCrystal && (
+        <div className="chakra-filter">
+          {CHAKRAS.map((c) => {
+            const on = activeChakras.includes(c.key);
+            return (
+              <button key={c.key} className={"chakra-chip" + (on ? " on" : "")}
+                style={on ? { background: c.color, borderColor: c.color } : { borderColor: c.color, color: c.color }}
+                onClick={() => toggleChakra(c.key)}>
+                {c.name}
+              </button>
+            );
+          })}
+          {activeChakras.length > 0 && (
+            <button className="chakra-clear" onClick={() => setActiveChakras([])}>清除篩選</button>
+          )}
+        </div>
+      )}
+
       {items.length === 0 ? (
-        <p className="empty">這個分類還沒有商品。</p>
+        <p className="empty">
+          {isCrystal && activeChakras.length > 0 ? "這個脈輪組合目前沒有對應的水晶。" : "這個分類還沒有商品。"}
+        </p>
       ) : (
         <div className="pgrid" style={{ "--pgrid-cols": cols }}>
           {items.map((p) => <ProductCard key={p.id} p={{ ...p, kind: "physical" }} />)}

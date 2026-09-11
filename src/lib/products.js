@@ -130,7 +130,7 @@ export async function adminCreate(input) {
     const list = cache || SEED_PHYSICAL;
     if (!input.name?.trim()) throw new Error("名稱不能空白。");
     if (!(Number(input.price) > 0)) throw new Error("價格要大於 0。");
-    const id = input.id?.trim() || "PH-" + Date.now().toString(36).toUpperCase();
+    const id = input.id?.trim() || "PH-" + Date.now().toString(36).toUpperCase() + Math.random().toString(36).slice(2, 6).toUpperCase();
     if (list.some((p) => p.id === id)) throw new Error("這個商品編號已經用過了。");
     const item = {
       id, name: input.name.trim(), en: input.en?.trim() || "",
@@ -140,6 +140,7 @@ export async function adminCreate(input) {
       emoji: input.emoji?.trim() || "✦", tint: input.tint?.trim() || "#F3EDF9",
       category: input.category || "crystal",
       soldOut: !!input.soldOut,
+      chakras: Array.isArray(input.chakras) ? input.chakras : [],
       image2: input.image2 || null,
     };
     cache = [...list, item];

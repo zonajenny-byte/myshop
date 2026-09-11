@@ -19,11 +19,29 @@ export const CATEGORIES = [
 ];
 export const DEFAULT_CATEGORY = "crystal";
 
+/**
+ * 七大脈輪。一件水晶可以對應不只一個脈輪（水晶常常橫跨好幾個），
+ * 所以商品資料裡 chakras 是陣列，不是單一值。
+ * 順序是身體由下往上排，跟一般脈輪圖的排列方式一致。
+ */
+export const CHAKRAS = [
+  { key: "root", name: "海底輪", en: "Root", color: "#C0392B" },
+  { key: "sacral", name: "臍輪", en: "Sacral", color: "#D9822B" },
+  { key: "solar", name: "太陽神經叢輪", en: "Solar Plexus", color: "#E8C547" },
+  { key: "heart", name: "心輪", en: "Heart", color: "#4C9A6B" },
+  { key: "throat", name: "喉輪", en: "Throat", color: "#4A90C4" },
+  { key: "third_eye", name: "眉心輪", en: "Third Eye", color: "#5C6BC0" },
+  { key: "crown", name: "頂輪", en: "Crown", color: "#8E6BAE" },
+];
+
 export const PHYSICAL = [
   {
     id: "PH-01",
     kind: "physical",
     category: "crystal",
+    // 月光石在水晶療癒的說法裡常對應眉心輪與頂輪，這是示範資料，
+    // 後台可以隨時改成你自己的判斷
+    chakras: ["third_eye", "crown"],
     name: "月相手鍊",
     en: "Moon Phase Bracelet",
     price: 1280,
